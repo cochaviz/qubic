@@ -1,0 +1,4 @@
+quantuminspire>=1.6.0
+qiskit>=0.34.1
+projectq>=0.7.0
+pygame>=2.1.2
