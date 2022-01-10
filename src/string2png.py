@@ -4,7 +4,7 @@ import io
 font = ImageFont.truetype("assets/Verdana.ttf", 80)
 
 
-def str2png(string='Hello', img_width=100, img_height=100):
+def str2png(string='hello', img_width=200, img_height=200):
     # create png with white background
     img = Image.new('RGB', (img_width, img_height), (255, 250, 255))
 

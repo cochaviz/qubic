@@ -63,8 +63,10 @@ def draw_status(turn_num, sub_turn_num, winner, coords, screen):
 
 
 def draw_xo(board, row, col, screen):
-    posx = WIDTH / 3 * row + 30 + (len(board.board[row][col]) % 4) * 20
-    posy = HEIGHT / 3 * col + 30 + (len(board.board[row][col]))
+    posx = WIDTH / 3 * col + 6 + (len(board.board[row][col]) % 3) * 50
+
+    border_y = int(len(board.board[row][col]) / 3) * 50
+    posy = HEIGHT / 3 * row + 6 + border_y
 
     # X's turn
     if board.turnNum % 2 == 1:
@@ -72,16 +74,18 @@ def draw_xo(board, row, col, screen):
 
         x_img_data = str2png(string)
         x_img = pg.image.frombuffer(x_img_data.tobytes(), x_img_data.size, x_img_data.mode)
-        x_img = pg.transform.scale(x_img, (80, 80))
+        # x_img = pg.transform.scale(x_img, (80, 80))
+        x_img = pg.transform.scale(x_img, (50, 50))
 
-        screen.blit(x_img, (posy, posx))
+        screen.blit(x_img, (posx, posy))
     else:
         string = "O" + str(board.turnNum)
 
         o_img_data = str2png(string)
         o_img = pg.image.frombuffer(o_img_data.tobytes(), o_img_data.size, o_img_data.mode)
-        o_img = pg.transform.scale(o_img, (80, 80))
+        # o_img = pg.transform.scale(o_img, (80, 80))
+        o_img = pg.transform.scale(o_img, (50, 50))
 
-        screen.blit(o_img, (posy, posx))
+        screen.blit(o_img, (posx, posy))
 
     pg.display.update()
