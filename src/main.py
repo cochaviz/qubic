@@ -10,84 +10,87 @@ WIDTH = 500
 HEIGHT = 500
 FPS = 30
 
-class Game():
-	def __init__(self):
-		self.state = GameState()
 
-		# initializing the pygame window
-		pg.init()
+class Game:
+    def __init__(self):
+        self.state = GameState()
 
-		# this is used to track time
-		self.CLOCK = pg.time.Clock()
+        # initializing the pygame window
+        pg.init()
 
-		# this method is used to build the
-		# infrastructure of the display
-		self.screen = pg.display.set_mode((WIDTH, HEIGHT + 100), 0, 32)
+        # this is used to track time
+        self.CLOCK = pg.time.Clock()
 
-		# setting up a nametag for the
-		# game window
-		pg.display.set_caption("My Tic Tac Toe")
+        # this method is used to build the
+        # infrastructure of the display
+        self.screen = pg.display.set_mode((WIDTH, HEIGHT + 100), 0, 32)
 
-		self.reset()
+        # setting up a nametag for the
+        # game window
+        pg.display.set_caption("My Tic Tac Toe")
 
-	def run(self):
-		while(True):
-			for event in pg.event.get():
-				if event.type == pg.QUIT:
-					print("Bye...")
-					pg.quit()
-					sys.exit()
-				elif event.type == pg.MOUSEBUTTONDOWN:
-					if(self.state.board.winner is not None):
-						self.reset()
-						break
+        self.reset()
 
-					row, col = self.user_click()
-					draw_xo(self.state.turn, row, col, self.screen)
+    def run(self):
+        while (True):
+            for event in pg.event.get():
+                if event.type == pg.QUIT:
+                    print("Bye...")
+                    pg.quit()
+                    sys.exit()
 
-					winner, winstate = self.state.take_turn(row, col)
-					draw_status(self.state.turn, winner, winstate, self.screen)
+                elif event.type == pg.MOUSEBUTTONDOWN:
+                    if self.state.board.winner is not None:
+                        self.reset()
+                        break
 
-			pg.display.update()
-			self.CLOCK.tick(FPS)
+                    row, col = self.user_click()
+                    draw_xo(self.state.board, row, col, self.screen)
 
-	def reset(self):
-		self.state.reset()
-		init_window(self.screen)
-		time.sleep(.1)
+                    winner, winstate = self.state.take_turn(row, col)
+                    draw_status(self.state.board.turnNum, self.state.board.subTurnNum, winner, winstate, self.screen)
 
-	def user_click(self):
-		# get coordinates of mouse click
-		x, y = pg.mouse.get_pos()
+            pg.display.update()
+            self.CLOCK.tick(FPS)
 
-		# get column of mouse click (1-3)
-		if(x<WIDTH / 3):
-			col = 0
+    def reset(self):
+        self.state.reset()
+        init_window(self.screen)
+        time.sleep(.1)
 
-		elif (x<WIDTH / 3 * 2):
-			col = 1
+    def user_click(self):
+        # get coordinates of mouse click
+        x, y = pg.mouse.get_pos()
 
-		elif(x<WIDTH):
-			col = 2
+        # get column of mouse click (1-3)
+        if (x < WIDTH / 3):
+            col = 0
 
-		else:
-			col = None
+        elif (x < WIDTH / 3 * 2):
+            col = 1
 
-		# get row of mouse click (1-3)
-		if(y<HEIGHT / 3):
-			row = 0
+        elif (x < WIDTH):
+            col = 2
 
-		elif (y<HEIGHT / 3 * 2):
-			row = 1
+        else:
+            col = None
 
-		elif(y<HEIGHT):
-			row = 2
+        # get row of mouse click (1-3)
+        if (y < HEIGHT / 3):
+            row = 0
 
-		else:
-			row = None
+        elif (y < HEIGHT / 3 * 2):
+            row = 1
 
-		return row, col
+        elif (y < HEIGHT):
+            row = 2
 
-if __name__=="__main__":
-	game = Game()
-	game.run()
+        else:
+            row = None
+
+        return row, col
+
+
+if __name__ == "__main__":
+    game = Game()
+    game.run()
