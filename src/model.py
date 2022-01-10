@@ -45,8 +45,8 @@ class Board():
             self.winner = self.board[0][2]
             return self.winner, ((0, 2), (2, 0))
 
-        if(all([all(row) for row in self.board]) and winner is None ):
-            return '-'
+        if(all([all(row) for row in self.board]) and self.winner is None ):
+            return '-', None
 
         return None, None
 
