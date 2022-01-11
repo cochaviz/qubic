@@ -1,3 +1,7 @@
+import graph as graphlib
+import view as viewlib
+
+
 class Board:
     def __init__(self):
         self.board = None
@@ -5,6 +9,8 @@ class Board:
         self.winner = None  # can either be 'o', 'x', or '-' for a draw
         self.turnNum = 1
         self.subTurnNum = 0
+        self.prevSubTurnIndex = None
+        self.graph = graphlib.Graph(9)
 
         self.reset()
 
@@ -115,6 +121,12 @@ class Board:
             return False
 
         self.board[row][col].append(char)
+        if self.prevSubTurnIndex is not None:
+            self.graph.add_edge(self.prevSubTurnIndex, row * 3 + col)
+            self.prevSubTurnIndex = None
+            if self.graph.is_cyclic():
+                # todo: do something when cyclic
+                self.final[row][col] = True
         return True
 
 
@@ -127,7 +139,8 @@ class GameState:
         """
         Returns true if its X's turn to move
         """
-        return self.board.subTurnNum < 2
+        # return self.board.subTurnNum < 2
+        return self.board.turnNum % 2 == 1
 
     def take_turn(self, row, col):
         if self.board.winner is not None:
@@ -138,8 +151,10 @@ class GameState:
         else:
             self.board.place_o(row, col)
 
-        if self.board.subTurnNum + 1 == 2:
+        if self.board.subTurnNum == 1:
             self.board.turnNum += 1
+        else:
+            self.board.prevSubTurnIndex = row * 3 + col
 
         self.board.subTurnNum = (self.board.subTurnNum + 1) % 2
 
