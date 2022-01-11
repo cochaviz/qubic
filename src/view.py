@@ -62,7 +62,7 @@ def draw_status(turn_num, sub_turn_num, winner, coords, screen):
     pg.display.update()
 
 
-def draw_xo(board, row, col, screen):
+def draw_quantum_xo(board, row, col, screen):
     posx = WIDTH / 3 * col + 6 + (len(board.board[row][col]) % 3) * 50
 
     border_y = int(len(board.board[row][col]) / 3) * 50
