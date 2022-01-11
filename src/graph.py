@@ -1,20 +1,27 @@
+from collections import defaultdict
+
+
 class Node:
     def __init__(self, id):
+        # a node has an id, equal to the index of the corresponding field in tic tac toe
+        # and an array of edges from this node
         self.id = id
         self.edges = []
 
 
 class Edge:
-    def __init__(self, node1, node2, key):
-        self.start = node1
-        self.end = node2
+    def __init__(self, node1_id, node2_id, key):
+        # store the ids of the two nodes and the key, which is equal to the turn number
+        self.start = node1_id
+        self.end = node2_id
         self.key = key
 
 
 class Graph:
     def __init__(self):
-        self.nodes = []
-        self.edges = []
+        # use defaultdicts for key assignment, like nodes[id]
+        self.nodes = defaultdict()
+        self.edges = defaultdict()
 
     def add_node(self, id):
         self.nodes[id] = Node(id)
@@ -29,17 +36,15 @@ class Graph:
         if id2 not in self.nodes:
             self.add_node(id2)
 
-        edge = Edge(self.nodes[id1], self.nodes[id2], key)
-        reverse_edge = Edge(self.nodes[id2], self.nodes[id1], key)
+        edge = Edge(id1, id2, key)
+        reverse_edge = Edge(id2, id1, key)
 
         self.nodes[id1].edges.append(edge)
         self.nodes[id2].edges.append(reverse_edge)
 
         self.edges[key] = edge
 
-    def is_cyclic(self, start_id):
-        return self.get_cycle(start_id)
-
+    # todo: make this method actually work
     def get_cycle(self, start_id):
         """
         return list of nodes and edges involved in a cycle
@@ -49,16 +54,23 @@ class Graph:
         #     return None
 
         start = self.nodes[start_id]
-        visited = {}  # set of visited nodes
+        visited = []  # list of visited nodes
         end_to_edge = {}  # map
 
         for edge in start.edges:
-            if edge.end in visited:
+            if self.nodes[edge.end] in visited:
                 return [[edge.start.id, edge.end.id],
                         [edge.key, end_to_edge[edge.end]]]
 
-            visited.add(edge.end)
+            visited.append(self.nodes[edge.end])
             end_to_edge[edge.end] = edge
+
+        return []
+
+    # Todo: implement remove cycle method
+    # yet to be implemented function for deleting a cycle
+    def remove_cycle(self):
+        return None
 
 # from collections import defaultdict
 #

@@ -10,7 +10,7 @@ class Board:
         self.turnNum = 1
         self.subTurnNum = 0
         self.prevSubTurnIndex = None
-        self.graph = graphlib.Graph(9)
+        self.graph = graphlib.Graph()
 
         self.reset()
 
@@ -122,11 +122,19 @@ class Board:
 
         self.board[row][col].append(char)
         if self.prevSubTurnIndex is not None:
-            self.graph.add_edge(self.prevSubTurnIndex, row * 3 + col)
+            newIndex = row * 3 + col
+
+            # if not self.graph.has_node(self.prevSubTurnIndex) :
+            #     self.graph.add_node(self.prevSubTurnIndex)
+            # if not self.graph.has_node(newIndex):
+            #     self.graph.add_node(newIndex)
+
+            self.graph.add_edge(self.prevSubTurnIndex, newIndex, self.turnNum)
             self.prevSubTurnIndex = None
-            if self.graph.is_cyclic():
+            if len(self.graph.get_cycle(newIndex)) != 0:
                 # todo: do something when cyclic
                 self.final[row][col] = True
+
         return True
 
 
