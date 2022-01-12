@@ -1,6 +1,6 @@
 import graph as graphlib
-import view as viewlib
-import math
+from superposition_solver import resolve_superposition_quantic
+from util import id_to_position
 
 
 class Board:
@@ -33,38 +33,6 @@ class Board:
         Checks which player has won, returns a tuple where the first element is the winner and the
         second a tuple with coordinates for which column/row/diagonal is the winning one
         """
-        # check if there is already a winner
-        # if self.winner is not None:
-        #     return self.winner, None
-        #
-        # # checking for winning rows
-        # for row in range(0, 3):
-        #     if (self.board[row][0] == self.board[row][1] == self.board[row][2]) and (self.board[row][0] is not None):
-        #         self.winner = self.board[row][0]
-        #         return self.winner, ((row, 0), (row, 2))
-        #
-        # # checking for winning columns
-        # for col in range(0, 3):
-        #     if (self.board[0][col] == self.board[1][col] == self.board[2][col]) and (self.board[0][col] is not None):
-        #         self.winner = self.board[0][col]
-        #         return self.winner, ((0, col), (2, col))
-        #
-        # # check for diagonal winners
-        # if (self.board[0][0] == self.board[1][1] == self.board[2][2]) and (self.board[0][0] is not None):
-        #     # game won diagonally left to right
-        #     self.winner = self.board[0][0]
-        #     return self.winner, ((0, 0), (2, 2))
-        #
-        # if (self.board[0][2] == self.board[1][1] == self.board[2][0]) and (self.board[0][2] is not None):
-        #     # game won diagonally right to left
-        #     self.winner = self.board[0][2]
-        #     return self.winner, ((0, 2), (2, 0))
-        #
-        # # check for draw
-        # if all([all(row) for row in self.board]):
-        #     self.winner = "-"
-        #     return self.winner, None
-
         # check if there is already a winner
         if self.winner is not None:
             return self.winner, None
@@ -125,6 +93,7 @@ class Board:
             raise IndexError("Out of bounds")
 
         if self.final[row][col]:
+            # todo: could return nice message that can be displayed in the UI
             return False
 
         # Check if the player does their two submoves on different tiles
@@ -134,22 +103,22 @@ class Board:
 
         self.board[row][col].append(char)
         if self.prevSubTurnIndex is not None:
-            self.graph.add_edge(self.prevSubTurnIndex, new_index, self.turnNum)
+            self.graph.add_edge(self.prevSubTurnIndex, new_index, char)
             self.prevSubTurnIndex = None
-            cycle = self.graph.get_cycle(new_index)
-            if cycle is not None:
-                # todo: add collapse event
-                # collapse
 
-                # Mark all nodes in the cycle as final
-                for id in cycle[0]:
-                    id_integer = int(id)
-                    row_from_id = math.floor(id_integer / 3)
-                    col_from_id = id_integer % 3
-                    self.final[row_from_id][col_from_id] = True
+            # only need to do the check on the second sub-turn (end of turn)
+            if self.subTurnNum % 2 == 1:
+                cycle = self.graph.get_cycle(new_index)
+                if cycle is not None:
+                    tile_to_mark = resolve_superposition_quantic(self.board, self.graph, cycle)
 
-                # Remove all edges and nodes that were in the cycle
-                self.graph.remove_cycle(cycle)
+                    # Mark all nodes in the cycle as final
+                    for node_id in tile_to_mark.keys():
+                        [row, col] = id_to_position(node_id)
+                        self.final[row][col] = True
+
+                    # Remove all edges and nodes that were in the cycle
+                    self.graph.remove_cycle(cycle)
 
         return True
 

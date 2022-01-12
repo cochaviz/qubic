@@ -32,7 +32,7 @@ class Game:
         self.reset()
 
     def run(self):
-        while (True):
+        while True:
             for event in pg.event.get():
                 if event.type == pg.QUIT:
                     print("Bye...")

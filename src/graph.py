@@ -22,6 +22,12 @@ class Edge:
 
 
 def path(edge, prev):
+    """
+    return list of nodes and edges involved in a cycle
+
+    @param edge: edge where the cycle was detected
+    @param prev: dict previous node -> edge
+    """
     cycle_node_ids = []
     cycle_edge_keys = [edge.key]
 
@@ -78,13 +84,14 @@ class Graph:
         return list of nodes and edges involved in a cycle
         """
         # graph is too small to have cycles
-        # if len(self.nodes) < 2:
-        #     return None
+        if len(self.nodes) < 2:
+            return None
 
         start = self.nodes[start_id]
         visited = []  # list of visited nodes
         end_to_edge = {}  # map
 
+        # quick check for cycles with len = 2
         for edge in start.edges:
             if edge.end in visited:
                 return [[edge.start.id, edge.end.id],
@@ -93,6 +100,7 @@ class Graph:
             visited.append(edge.end)
             end_to_edge[edge.end] = edge
 
+        # do proper cycles search for cycles with len > 2
         q = [start]
         layers = defaultdict()
         prev = dict()
@@ -122,11 +130,10 @@ class Graph:
         node_edge_list has the following form: [[nodes], [edges]]
         """
         for i in node_edge_list[1]:
-            edge = self.edges.pop(i)
+            self.edges.pop(i)
 
         for i in node_edge_list[0]:
-            node = self.nodes.pop(i)
-            node.edges.clear()
+            self.nodes.pop(i)
 
 
 def test1():

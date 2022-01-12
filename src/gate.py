@@ -3,4 +3,3 @@ class Gate:
         self.target_state = target_state
         self.control_state = control_state
         self.gate_char = gate
-

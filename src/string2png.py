@@ -1,5 +1,4 @@
 from PIL import Image, ImageDraw, ImageFont
-import io
 
 font = ImageFont.truetype("assets/Verdana.ttf", 80)
 

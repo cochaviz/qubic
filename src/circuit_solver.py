@@ -11,6 +11,7 @@ authentication = get_authentication()
 QI.set_authentication(authentication, QI_URL)
 
 qi_backend = QI.get_backend('QX single-node simulator')
+starmon_qi_backend = QI.get_backend('Starmon-5')
 
 
 def add_gate_to_circ(qubit_index, gate_char, qr, qc, control_qubit_index=None):
@@ -19,7 +20,7 @@ def add_gate_to_circ(qubit_index, gate_char, qr, qc, control_qubit_index=None):
 
     @param qubit_index: index of target qubit in the quantum register object qr
     @type qubit_index: int
-    @param gate_char: gate encoded as character. ie: 'h', 'x', 'cx', 'z', 'zh' etc
+    @param gate_char: gate encoded as character. ie: 'h', 'x', 'cx', 'z', 'zh' etc.
     @type gate_char: char
     @type qr: QuantumRegister
     @type qc: QuantumCircuit
@@ -95,3 +96,21 @@ def resolve_circuit(gates_list):
         res[qubits[qubit]] = qubit_measured_state
 
     return res
+
+
+def quantum_coin_flip():
+    """
+    does a random measurement on an qubit in superposition, then
+    returns a 0 or 1, with p(0) = p(1) = 50%
+    """
+    qc = QuantumCircuit(1, name='coin-flip')    # quantum circuit with 1 qubit
+
+    qc.h(0)  # place hadamard on qubit
+
+    qc.measure_all()
+
+    qi_job = execute(qc, backend=starmon_qi_backend, shots=1)
+    qi_result = qi_job.result()
+
+    # return measurement result: 0 or 1
+    return next(iter(qi_result.get_counts(qc).items()))[0]
