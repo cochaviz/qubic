@@ -1,5 +1,6 @@
 import graph as graphlib
 import view as viewlib
+import math
 
 
 class Board:
@@ -26,6 +27,8 @@ class Board:
         self.winner = None
         self.turnNum = 1
         self.subTurnNum = 0
+        self.prevSubTurnIndex = None
+        self.graph = graphlib.Graph()
 
     def check_win(self):
         """
@@ -101,6 +104,10 @@ class Board:
                 self.winner = self.board[0][2]
                 return self.winner, ((0, 2), (2, 0))
 
+        if self.turnNum > 9:
+            self.winner = '-'
+            return self.winner, None
+
         return None, None
 
     def place_x(self, row, col):
@@ -122,20 +129,29 @@ class Board:
         if self.final[row][col]:
             return False
 
+        # Check if the player does their two submoves on different tiles
+        new_index = row * 3 + col
+        if self.prevSubTurnIndex == new_index:
+            return False
+
         self.board[row][col].append(char)
         if self.prevSubTurnIndex is not None:
-            newIndex = row * 3 + col
-
-            # if not self.graph.has_node(self.prevSubTurnIndex) :
-            #     self.graph.add_node(self.prevSubTurnIndex)
-            # if not self.graph.has_node(newIndex):
-            #     self.graph.add_node(newIndex)
-
-            self.graph.add_edge(self.prevSubTurnIndex, newIndex, self.turnNum)
+            self.graph.add_edge(self.prevSubTurnIndex, new_index, self.turnNum)
             self.prevSubTurnIndex = None
-            if len(self.graph.get_cycle(newIndex)) != 0:
-                # todo: do something when cyclic
-                self.final[row][col] = True
+            cycle = self.graph.get_cycle(new_index)
+            if cycle is not None:
+                # todo: add collapse event
+                # collapse
+
+                # Mark all nodes in the cycle as final
+                for id in cycle[0]:
+                    id_integer = int(id)
+                    row_from_id = math.floor(id_integer / 3)
+                    col_from_id = id_integer % 3
+                    self.final[row_from_id][col_from_id] = True
+
+                # Remove all edges and nodes that were in the cycle
+                self.graph.remove_cycle(cycle)
 
         return True
 
@@ -153,13 +169,15 @@ class GameState:
         return self.board.turnNum % 2 == 1
 
     def take_turn(self, row, col):
-        if self.board.winner is not None:
+        if self.board.turnNum > 9 or self.board.winner is not None:
             return self.board.check_win()
 
         if self.x_moves():
-            self.board.place_x(row, col)
+            if not self.board.place_x(row, col):
+                return False, None
         else:
-            self.board.place_o(row, col)
+            if not self.board.place_o(row, col):
+                return False, None
 
         if self.board.subTurnNum == 1:
             self.board.turnNum += 1

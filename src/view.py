@@ -91,7 +91,6 @@ class Drawer():
         else:
             message = winner + " won !"
 
-
         # setting the font properties like
         # color and WIDTH of the text
         text = self.mono_font.render(message, 1, (255, 255, 255))
@@ -108,20 +107,25 @@ class Drawer():
         """
         Draws an X or O in the given (row, col) depending on the board state
         """
-        posx = self.grid_left + self.grid_cell_width * col + (len(board.board[row][col]) % 3) * (IMG_RATIO * NEW_IMG_HEIGHT + padding) + padding
-        border_y = int(len(board.board[row][col]) / 3) * NEW_IMG_HEIGHT
+        posx = self.grid_left + self.grid_cell_width * col + ((len(board.board[row][col]) - 1) % 3) * (IMG_RATIO * NEW_IMG_HEIGHT + padding) + padding
+        border_y = int((len(board.board[row][col]) - 1) / 3) * NEW_IMG_HEIGHT
         posy = self.grid_top + self.grid_cell_height * row + border_y + padding
 
+        correct_turnNum = board.turnNum
+
+        if board.subTurnNum % 2 == 0:
+            correct_turnNum -= 1
+
         # X's turn
-        if board.turnNum % 2 == 1:
-            string = "X" + str(board.turnNum)
+        if correct_turnNum % 2 == 1:
+            string = "X" + str(correct_turnNum)
 
             x_img = pg.image.load("assets/"+string+".png")
             x_img = pg.transform.smoothscale(x_img, (IMG_RATIO * NEW_IMG_HEIGHT, NEW_IMG_HEIGHT))
 
             self.screen.blit(x_img, (posx, posy))
         else:
-            string = "O" + str(board.turnNum)
+            string = "O" + str(correct_turnNum)
 
             o_img = pg.image.load("assets/"+string+".png")
             o_img = pg.transform.smoothscale(o_img, (IMG_RATIO * NEW_IMG_HEIGHT, NEW_IMG_HEIGHT))
