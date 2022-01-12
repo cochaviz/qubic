@@ -1,4 +1,3 @@
-from string2png import str2png
 import pygame as pg
 
 IMG_RATIO = 118/84

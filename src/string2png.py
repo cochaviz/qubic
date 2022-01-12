@@ -1,7 +1,7 @@
 from PIL import Image, ImageDraw, ImageFont
 import io
 
-font = ImageFont.truetype("assets/Verdana.ttf", 80)
+font = ImageFont.truetype("assets/FiraCode.ttf", 80)
 
 
 def str2png(string='hello', img_width=200, img_height=200):
