@@ -3,18 +3,41 @@ from collections import defaultdict
 
 class Node:
     def __init__(self, id):
-        # a node has an id, equal to the index of the corresponding field in tic tac toe
+        # a node has an id, equal to the index of the corresponding field in tic-tac-toe
         # and an array of edges from this node
         self.id = id
         self.edges = []
 
 
 class Edge:
-    def __init__(self, node1_id, node2_id, key):
+    def __init__(self, node1, node2, key):
         # store the ids of the two nodes and the key, which is equal to the turn number
-        self.start = node1_id
-        self.end = node2_id
+        self.start = node1
+        self.end = node2
         self.key = key
+
+
+def path(edge, prev):
+    cycle_node_ids = []
+    cycle_edge_keys = [edge.key]
+
+    curr_node = edge.start
+    while prev.get(curr_node) is not None:
+        curr_edge = prev[curr_node]
+        cycle_node_ids.append(curr_node.id)
+        cycle_edge_keys.append(curr_edge.key)
+        curr_node = curr_edge.start
+
+    cycle_node_ids.append(curr_node.id)
+
+    curr_node = edge.end
+    while prev.get(curr_node) is not None:
+        curr_edge = prev[curr_node]
+        cycle_node_ids.insert(0, curr_node.id)
+        cycle_edge_keys.insert(0, curr_edge.key)
+        curr_node = curr_edge.start
+
+    return [cycle_node_ids, cycle_edge_keys]
 
 
 class Graph:
@@ -36,15 +59,14 @@ class Graph:
         if id2 not in self.nodes:
             self.add_node(id2)
 
-        edge = Edge(id1, id2, key)
-        reverse_edge = Edge(id2, id1, key)
+        edge = Edge(self.nodes[id1], self.nodes[id2], key)
+        reverse_edge = Edge(self.nodes[id2], self.nodes[id1], key)
 
         self.nodes[id1].edges.append(edge)
         self.nodes[id2].edges.append(reverse_edge)
 
         self.edges[key] = edge
 
-    # todo: make this method actually work
     def get_cycle(self, start_id):
         """
         return list of nodes and edges involved in a cycle
@@ -58,96 +80,84 @@ class Graph:
         end_to_edge = {}  # map
 
         for edge in start.edges:
-            if self.nodes[edge.end] in visited:
+            if edge.end in visited:
                 return [[edge.start.id, edge.end.id],
                         [edge.key, end_to_edge[edge.end]]]
 
-            visited.append(self.nodes[edge.end])
+            visited.append(edge.end)
             end_to_edge[edge.end] = edge
 
-        return []
+        q = [start]
+        layers = defaultdict()
+        prev = dict()
+        layers[start] = 0
+        prev[start] = None
+
+        while q is not None and len(q) > 0:
+            # shift the list
+            curr = q[0]
+            del q[0]
+
+            layer = layers[curr]
+
+            for edge in curr.edges:
+                if edge.end in layers:
+                    if layers[edge.end] == layer - 1:
+                        continue
+                    else:
+                        return path(edge, prev)
+                q.append(edge.end)
+                layers[edge.end] = layer + 1
+                prev[edge.end] = edge
 
     # Todo: implement remove cycle method
     # yet to be implemented function for deleting a cycle
     def remove_cycle(self):
         return None
 
-# from collections import defaultdict
-#
-#
-# class Graph:
-#     def __init__(self, vertices):
-#         # number of vertices
-#         self.vertices = vertices
-#
-#         self.graph = defaultdict(list)
-#
-#     # Function to add an edge to graph
-#     def add_edge(self, v, w):
-#         # Add w to v_s list
-#         self.graph[v].append(w)
-#
-#         # Add v to w_s list
-#         self.graph[w].append(v)
-#
-#     # A recursive function that uses
-#     # visited[] and parent to detect
-#     # cycle in subgraph reachable from vertex v.
-#     # TODO: returns a set of nodes from
-#     def is_cyclic_util(self, v, visited, vertices, parent):
-#
-#         # Mark the current node as visited
-#         visited[v] = True
-#
-#         # Recur for all the vertices
-#         # adjacent to this vertex
-#         for i in self.graph[v]:
-#
-#             # If the node is not
-#             # visited then recurse on it
-#             if not visited[i]:
-#                 vertices_in_cycle = self.is_cyclic_util(i, visited, vertices, v)
-#                 if vertices_in_cycle is not None:
-#                     return vertices.union(vertices_in_cycle)
-#             # If an adjacent vertex is
-#             # visited and not parent
-#             # of current vertex,
-#             # then there is a cycle
-#             elif parent != i:
-#                 return vertices
-#
-#         return None
-#
-#     # Returns true if the graph
-#     # contains a cycle, else false.
-#     def is_cyclic(self):
-#
-#         # Mark all the vertices
-#         # as not visited
-#         visited = [False] * self.vertices
-#
-#         # Call the recursive helper
-#         # function to detect cycle in different
-#         # DFS trees
-#         for i in range(self.vertices):
-#
-#             # Don't recur for u if it
-#             # is already visited
-#             if not visited[i]:
-#                 if self.is_cyclic_util(i, visited, {i}, -1):
-#                     return True
-#
-#         return False
+
+def test1():
+    g = Graph()
+    g.add_node('1')
+    g.add_node('2')
+    g.add_node('3')
+    g.add_edge('1', '2', 'ab')
+    g.add_edge('2', '3', 'bc')
+    g.add_edge('3', '1', 'ca')
+
+    print(g.get_cycle('1'))
+    # expected: [['3', '2', '1'], ['ca', 'bc', 'ab']]
 
 
-# if __name__ == "__main__":
-#     g = Graph(6)
-#     g.add_edge(1, 2)
-#     g.add_edge(1, 4)
-#     g.add_edge(2, 4)
-#     g.add_edge(4, 5)
-#     g.add_edge(4, 6)
-#     visited = [False] * g.vertices
-#     print(g.is_cyclic_util(1, visited, {1}, -1))
+def test2():
+    g = Graph()
+    g.add_node('1')
+    g.add_node('2')
+    g.add_edge('1', '2', 'a')
+    g.add_edge('1', '2', 'b')
+
+    print(g.get_cycle('1'))
 
 
+def test3():
+    g = Graph()
+    g.add_node('1')
+    g.add_node('2')
+    g.add_edge('1', '2', 'a')
+    g.add_edge('2', '1', 'b')
+
+    print(g.get_cycle('1'))
+
+
+def test4():
+    g = Graph()
+    g.add_node('a')
+    g.add_node('b')
+
+    g.add_edge('a', 'b', 'x1')
+    print(g.get_cycle('b'))
+    # expect: None
+
+
+if __name__ == "__main__":
+    test2()
