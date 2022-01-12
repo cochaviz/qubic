@@ -79,9 +79,9 @@ class Drawer():
         """
         if winner is None:
             if turn_num % 2 == 0:
-                message = "O's Turn"
+                message = "0's Turn"
             else:
-                message = "X's Turn"
+                message = "1's Turn"
 
             if sub_turn_num % 2 == 1:
                 message += " Again"

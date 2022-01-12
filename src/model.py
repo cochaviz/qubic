@@ -124,7 +124,8 @@ class Board:
 
     def place(self, row, col, char):
         if row > 2 or col > 2 or row < 0 or col < 0:
-            raise IndexError("Out of bounds")
+            return False
+            # raise IndexError("Out of bounds")
 
         if self.final[row][col]:
             return False
