@@ -3,15 +3,19 @@ from collections import defaultdict
 
 class Node:
     def __init__(self, id):
-        # a node has an id, equal to the index of the corresponding field in tic-tac-toe
-        # and an array of edges from this node
+        """
+        a node has an id, equal to the index of the corresponding field in tic-tac-toe
+        and an array of edges from this node
+        """
         self.id = id
         self.edges = []
 
 
 class Edge:
     def __init__(self, node1, node2, key):
-        # store the ids of the two nodes and the key, which is equal to the turn number
+        """
+        store the ids of the two nodes and the key, which is equal to the turn number
+        """
         self.start = node1
         self.end = node2
         self.key = key
@@ -42,9 +46,11 @@ def path(edge, prev):
 
 class Graph:
     def __init__(self):
-        # use defaultdicts for key assignment, like nodes[id]
-        self.nodes = defaultdict()
-        self.edges = defaultdict()
+        """
+        use dicts for key assignment, like nodes[id]
+        """
+        self.nodes = dict()
+        self.edges = dict()
 
     def add_node(self, id):
         self.nodes[id] = Node(id)
@@ -82,7 +88,7 @@ class Graph:
         for edge in start.edges:
             if edge.end in visited:
                 return [[edge.start.id, edge.end.id],
-                        [edge.key, end_to_edge[edge.end]]]
+                        [edge.key, end_to_edge[edge.end].key]]
 
             visited.append(edge.end)
             end_to_edge[edge.end] = edge
@@ -110,10 +116,22 @@ class Graph:
                 layers[edge.end] = layer + 1
                 prev[edge.end] = edge
 
-    # Todo: implement remove cycle method
-    # yet to be implemented function for deleting a cycle
-    def remove_cycle(self):
-        return None
+    def remove_cycle(self, node_edge_list):
+        """
+        Remove all nodes and edges in the node_edge_list from the graph
+        node_edge_list has the following form: [[nodes], [edges]]
+        """
+        for i in node_edge_list[1]:
+            edge = self.edges.pop(i)
+            del edge
+            print("debug statement lmao 3")
+
+        for i in node_edge_list[0]:
+            node = self.nodes.pop(i)
+            node.edges.clear()
+            del node
+            print("debug statement lmao 2")
+        print("debug statement lmao")
 
 
 def test1():
@@ -160,4 +178,7 @@ def test4():
 
 
 if __name__ == "__main__":
+    test1()
     test2()
+    test3()
+    test4()

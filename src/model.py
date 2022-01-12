@@ -1,5 +1,6 @@
 import graph as graphlib
 import view as viewlib
+import math
 
 
 class Board:
@@ -99,6 +100,9 @@ class Board:
                 self.winner = self.board[0][2]
                 return self.winner, ((0, 2), (2, 0))
 
+        if self.turnNum > 9:
+            return '-', None
+
         return None, None
 
     def place_x(self, row, col):
@@ -131,9 +135,16 @@ class Board:
 
             self.graph.add_edge(self.prevSubTurnIndex, newIndex, self.turnNum)
             self.prevSubTurnIndex = None
-            if len(self.graph.get_cycle(newIndex)) != 0:
+            cycle = self.graph.get_cycle(newIndex)
+            if cycle is not None:
                 # todo: do something when cyclic
-                self.final[row][col] = True
+                for id in cycle[0]:
+                    id_integer = int(id)
+                    row_from_id = math.floor(id_integer / 3)
+                    col_from_id = id_integer % 3
+                    self.final[row_from_id][col_from_id] = True
+
+                self.graph.remove_cycle(cycle)
 
         return True
 
