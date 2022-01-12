@@ -127,26 +127,28 @@ class Board:
         if self.final[row][col]:
             return False
 
+        # Check if the player does their two submoves on different tiles
+        new_index = row * 3 + col
+        if self.prevSubTurnIndex == new_index:
+            return False
+
         self.board[row][col].append(char)
         if self.prevSubTurnIndex is not None:
-            newIndex = row * 3 + col
-
-            # if not self.graph.has_node(self.prevSubTurnIndex) :
-            #     self.graph.add_node(self.prevSubTurnIndex)
-            # if not self.graph.has_node(newIndex):
-            #     self.graph.add_node(newIndex)
-
-            self.graph.add_edge(self.prevSubTurnIndex, newIndex, self.turnNum)
+            self.graph.add_edge(self.prevSubTurnIndex, new_index, self.turnNum)
             self.prevSubTurnIndex = None
-            cycle = self.graph.get_cycle(newIndex)
+            cycle = self.graph.get_cycle(new_index)
             if cycle is not None:
-                # todo: do something when cyclic
+                # todo: add collapse event
+                # collapse
+
+                # Mark all nodes in the cycle as final
                 for id in cycle[0]:
                     id_integer = int(id)
                     row_from_id = math.floor(id_integer / 3)
                     col_from_id = id_integer % 3
                     self.final[row_from_id][col_from_id] = True
 
+                # Remove all edges and nodes that were in the cycle
                 self.graph.remove_cycle(cycle)
 
         return True
@@ -169,9 +171,11 @@ class GameState:
             return self.board.check_win()
 
         if self.x_moves():
-            self.board.place_x(row, col)
+            if not self.board.place_x(row, col):
+                return False, None
         else:
-            self.board.place_o(row, col)
+            if not self.board.place_o(row, col):
+                return False, None
 
         if self.board.subTurnNum == 1:
             self.board.turnNum += 1

@@ -63,14 +63,18 @@ def draw_status(turn_num, sub_turn_num, winner, coords, screen):
 
 
 def draw_quantum_xo(board, row, col, screen):
-    posx = WIDTH / 3 * col + 6 + (len(board.board[row][col]) % 3) * 50
+    posx = WIDTH / 3 * col + 6 + ((len(board.board[row][col]) - 1) % 3) * 50
 
-    border_y = int(len(board.board[row][col]) / 3) * 50
+    border_y = int((len(board.board[row][col]) - 1) / 3) * 50
     posy = HEIGHT / 3 * row + 6 + border_y
 
-    # X's turn
-    if board.turnNum % 2 == 1:
-        string = "X" + str(board.turnNum)
+    correct_turnNum = board.turnNum
+    if board.subTurnNum % 2 == 0:
+        correct_turnNum -= 1
+
+    # X's turn (turnNum is already incremented by 1)
+    if correct_turnNum % 2 == 1:
+        string = "X" + str(correct_turnNum)
 
         x_img_data = str2png(string)
         x_img = pg.image.frombuffer(x_img_data.tobytes(), x_img_data.size, x_img_data.mode)
@@ -79,7 +83,7 @@ def draw_quantum_xo(board, row, col, screen):
 
         screen.blit(x_img, (posx, posy))
     else:
-        string = "O" + str(board.turnNum)
+        string = "O" + str(correct_turnNum)
 
         o_img_data = str2png(string)
         o_img = pg.image.frombuffer(o_img_data.tobytes(), o_img_data.size, o_img_data.mode)

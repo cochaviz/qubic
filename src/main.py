@@ -45,9 +45,12 @@ class Game:
                         break
 
                     row, col = self.user_click()
-                    draw_quantum_xo(self.state.board, row, col, self.screen)
 
                     winner, winstate = self.state.take_turn(row, col)
+                    if winner is False:
+                        break
+                    draw_quantum_xo(self.state.board, row, col, self.screen)
+
                     draw_status(self.state.board.turnNum, self.state.board.subTurnNum, winner, winstate, self.screen)
 
             pg.display.update()
