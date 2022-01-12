@@ -39,7 +39,7 @@ class Game:
                     pg.quit()
                     sys.exit()
 
-                elif event.type == pg.MOUSEBUTTONDOWN:
+                elif event.type == pg.MOUSEBUTTONDOWN and pg.mouse.get_pressed()[0]:
                     if self.state.board.winner is not None:
                         self.reset()
                         break

@@ -123,15 +123,10 @@ class Graph:
         """
         for i in node_edge_list[1]:
             edge = self.edges.pop(i)
-            del edge
-            print("debug statement lmao 3")
 
         for i in node_edge_list[0]:
             node = self.nodes.pop(i)
             node.edges.clear()
-            del node
-            print("debug statement lmao 2")
-        print("debug statement lmao")
 
 
 def test1():

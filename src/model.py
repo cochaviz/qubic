@@ -25,6 +25,8 @@ class Board:
         self.winner = None
         self.turnNum = 1
         self.subTurnNum = 0
+        self.prevSubTurnIndex = None
+        self.graph = graphlib.Graph()
 
     def check_win(self):
         """
@@ -101,7 +103,8 @@ class Board:
                 return self.winner, ((0, 2), (2, 0))
 
         if self.turnNum > 9:
-            return '-', None
+            self.winner = '-'
+            return self.winner, None
 
         return None, None
 
@@ -162,7 +165,7 @@ class GameState:
         return self.board.turnNum % 2 == 1
 
     def take_turn(self, row, col):
-        if self.board.winner is not None:
+        if self.board.turnNum > 9 or self.board.winner is not None:
             return self.board.check_win()
 
         if self.x_moves():
