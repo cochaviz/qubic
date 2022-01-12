@@ -1,3 +1,4 @@
+from string2png import str2png
 import pygame as pg
 
 IMG_RATIO = 118/84
@@ -18,20 +19,21 @@ class Drawer():
         self.LINE_COLOR = (144, 144, 144)
 
         # font
-        self.mono_font = pg.font.Font("assets/FiraCode.ttf", 20)
+        self.mono_font = pg.font.Font("assets/FiraCode.ttf", 30)
 
         # grid settings
         self.h_padding_grid = 100
         self.margin_grid = 50
         self.parse_grid_settings()
 
-        self.load_assets()
-
         # pygame init
         self.screen = pg.display.set_mode((self.WIDTH, self.HEIGHT), 0, 32)
         pg.display.set_caption("My Tic Tac Toe")
 
     def parse_grid_settings(self):
+        """
+        Parses the settings defined in the init function to generate some paramaters to improve quality of life
+        """
         self.grid_left = self.h_padding_grid
         self.grid_right = self.WIDTH - self.h_padding_grid
         self.grid_top = self.STATUS_HEIGHT
@@ -40,11 +42,10 @@ class Drawer():
         self.grid_cell_width = (self.grid_right - self.grid_left) / 3
         self.grid_cell_height = (self.grid_bottom - self.grid_top) / 3
 
-    def load_assets(self):
-        self.initiating_window = pg.image.load("assets/modified_cover.png")
-        self.initiating_window = pg.transform.scale(self.initiating_window, (self.WIDTH, self.HEIGHT + 100))
-
     def draw_grid(self, margin=30, line_thickness=2):
+        """
+        Draws the grid according to the given parameters
+        """
         self.screen.fill(self.BG)
         self.screen.fill(self.BG_ALT, (self.h_padding_grid, self.STATUS_HEIGHT, self.WIDTH - 2 * self.h_padding_grid, self.HEIGHT - self.TOOLBAR_HEIGHT - self.STATUS_HEIGHT))
 
@@ -65,10 +66,17 @@ class Drawer():
         pg.draw.line(self.screen, self.LINE_COLOR, (left, height / 3 * 2 + self.grid_top), (right, height / 3 * 2 + self.grid_top), line_thickness)
 
     def init_window(self):
+        """
+        Initializes the window with the grid and status
+        """
         self.draw_grid()
         self.draw_status(1, 0, None, None)
 
     def draw_status(self, turn_num, sub_turn_num, winner, coords):
+        """
+        Draws the status bar
+        TODO Separate the status- and toolbars
+        """
         if winner is None:
             if turn_num % 2 == 0:
                 message = "O's Turn"
@@ -97,6 +105,9 @@ class Drawer():
 
 
     def draw_quantum_xo(self, board, row, col, padding=15):
+        """
+        Draws an X or O in the given (row, col) depending on the board state
+        """
         posx = self.grid_left + self.grid_cell_width * col + (len(board.board[row][col]) % 3) * (IMG_RATIO * NEW_IMG_HEIGHT + padding) + padding
         border_y = int(len(board.board[row][col]) / 3) * NEW_IMG_HEIGHT
         posy = self.grid_top + self.grid_cell_height * row + border_y + padding
@@ -106,7 +117,6 @@ class Drawer():
             string = "X" + str(board.turnNum)
 
             x_img = pg.image.load("assets/"+string+".png")
-            # x_img = pg.image.frombuffer(x_img_data.tobytes(), x_img_data.size, x_img_data.mode)
             x_img = pg.transform.smoothscale(x_img, (IMG_RATIO * NEW_IMG_HEIGHT, NEW_IMG_HEIGHT))
 
             self.screen.blit(x_img, (posx, posy))
@@ -114,7 +124,6 @@ class Drawer():
             string = "O" + str(board.turnNum)
 
             o_img = pg.image.load("assets/"+string+".png")
-            # o_img = pg.image.frombuffer(o_img_data.tobytes(), o_img_data.size, o_img_data.mode)
             o_img = pg.transform.smoothscale(o_img, (IMG_RATIO * NEW_IMG_HEIGHT, NEW_IMG_HEIGHT))
 
             self.screen.blit(o_img, (posx, posy))
