@@ -6,8 +6,6 @@ import time
 from model import *
 from view import *
 
-WIDTH = 500
-HEIGHT = 500
 FPS = 30
 
 
@@ -23,11 +21,10 @@ class Game:
 
         # this method is used to build the
         # infrastructure of the display
-        self.screen = pg.display.set_mode((WIDTH, HEIGHT + 100), 0, 32)
+        self.drawer = Drawer()
 
         # setting up a nametag for the
         # game window
-        pg.display.set_caption("My Tic Tac Toe")
 
         self.reset()
 
@@ -45,17 +42,17 @@ class Game:
                         break
 
                     row, col = self.user_click()
-                    draw_quantum_xo(self.state.board, row, col, self.screen)
+                    self.drawer.draw_quantum_xo(self.state.board, row, col)
 
                     winner, winstate = self.state.take_turn(row, col)
-                    draw_status(self.state.board.turnNum, self.state.board.subTurnNum, winner, winstate, self.screen)
+                    self.drawer.draw_status(self.state.board.turnNum, self.state.board.subTurnNum, winner, winstate)
 
             pg.display.update()
             self.CLOCK.tick(FPS)
 
     def reset(self):
         self.state.reset()
-        init_window(self.screen)
+        self.drawer.init_window()
         time.sleep(.1)
 
     def user_click(self):
@@ -76,13 +73,13 @@ class Game:
             col = None
 
         # get row of mouse click (1-3)
-        if (y < HEIGHT / 3):
+        if (y < self.drawer.HEIGHT / 3):
             row = 0
 
-        elif (y < HEIGHT / 3 * 2):
+        elif (y < self.drawer.HEIGHT / 3 * 2):
             row = 1
 
-        elif (y < HEIGHT):
+        elif (y < self.drawer.HEIGHT):
             row = 2
 
         else:
