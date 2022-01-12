@@ -60,26 +60,26 @@ class Game:
         x, y = pg.mouse.get_pos()
 
         # get column of mouse click (1-3)
-        if (x < self.drawer.grid_left + self.drawer.grid_cell_size):
+        if (x < self.drawer.grid_left + self.drawer.grid_cell_width):
             col = 0
 
-        elif (x < self.drawer.grid_left + self.drawer.grid_cell_size * 2):
+        elif (x < self.drawer.grid_left + self.drawer.grid_cell_width * 2):
             col = 1
 
-        elif (x < self.drawer.grid_left + self.drawer.grid_cell_size * 3):
+        elif (x < self.drawer.grid_left + self.drawer.grid_cell_width * 3):
             col = 2
 
         else:
             col = None
 
         # get row of mouse click (1-3)
-        if (y < self.drawer.grid_top + self.drawer.grid_cell_size):
+        if (y < self.drawer.grid_top + self.drawer.grid_cell_height):
             row = 0
 
-        elif (y < self.drawer.grid_top + self.drawer.grid_cell_size * 2):
+        elif (y < self.drawer.grid_top + self.drawer.grid_cell_height * 2):
             row = 1
 
-        elif (y < self.drawer.grid_top + self.drawer.grid_cell_size * 3):
+        elif (y < self.drawer.grid_top + self.drawer.grid_cell_height * 3):
             row = 2
 
         else:

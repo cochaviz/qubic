@@ -19,7 +19,9 @@ class Board:
         Resets the board
         """
         # 2d array with empty lists in every cell
-        self.board = [[[], [], []], [[], [], []], [[], [], []]]
+        self.board = [[[], [], []], \
+                      [[], [], []], \
+                      [[], [], []]]
         self.final = [[False] * 3, [False] * 3, [False] * 3]
         self.winner = None
         self.turnNum = 1
