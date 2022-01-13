@@ -42,9 +42,11 @@ class Game:
                         break
 
                     row, col = self.user_click()
-                    if not self.state.is_valid_move(row, col):
-                        #TODO: improve by specifying what is invalid about the move
-                        self.drawer.draw_invalid_move()
+
+                    # Message is false if the move is valid
+                    message = self.state.is_invalid_move(row, col)
+                    if message:
+                        self.drawer.draw_status_message(message)
                         break
 
                     self.state.take_turn(row, col)

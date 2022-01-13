@@ -80,17 +80,21 @@ class Board:
 
     def place_x(self, row, col):
         """
-        Places an X on the specified location, returns False if the move was unsuccessful and True if succesful
+        Places an X on the specified location
         """
         self.place(row, col, 'x' + str(self.turnNum))
 
     def place_o(self, row, col):
         """
-        Places an O on the specified location, returns False if the move was unsuccessful and True if succesful
+        Places an O on the specified location
         """
         self.place(row, col, 'o' + str(self.turnNum))
 
     def place(self, row, col, char):
+        """
+        This method updates the board with the new character to be placed,
+        and checks if a cycle needs to be collapsed, and does so if it is necessary
+        """
         new_index = row * 3 + col
         self.board[row][col].append(char)
 
@@ -98,8 +102,6 @@ class Board:
             self.graph.add_edge(self.prevSubTurnIndex, new_index, char)
             self.prevSubTurnIndex = None
 
-            # only need to do the check on the second sub-turn (end of turn)
-            # if self.subTurnNum % 2 == 1:
             cycle = self.graph.get_cycle(new_index)
             if cycle is not None:
                 tile_to_mark = resolve_superposition(self.board, self.graph, cycle, quantic=False)
@@ -122,21 +124,16 @@ class GameState:
         """
         Returns true if its X's turn to move
         """
-        # return self.board.subTurnNum < 2
         return self.board.turnNum % 2 == 1
 
     def take_turn(self, row, col):
-        # if self.board.turnNum > 9 or self.board.winner is not None:
-            # return self.board.check_win()
-
+        """
+        Places an X or an O on the specified location
+        """
         if self.x_moves():
             self.board.place_x(row, col)
-            # if not self.board.place_x(row, col):
-            #     return False, None
         else:
             self.board.place_o(row, col)
-            # if not self.board.place_o(row, col):
-            #   return False, None
 
         if self.board.subTurnNum == 1:
             self.board.turnNum += 1
@@ -145,25 +142,26 @@ class GameState:
 
         self.board.subTurnNum = (self.board.subTurnNum + 1) % 2
 
-        #return self.board.check_win()
-
     def reset(self):
         self.board.reset()
 
-    def is_valid_move(self, row, col):
+    def is_invalid_move(self, row, col):
+        """
+        Checks to see if a move is valid or not, based on the row and column coordinates
+        Returns True if the move is valid, a message containing info on why not otherwise
+        """
         if self.board.turnNum > 9 or self.board.winner is not None:
-            return False
+            return "The game is already over!"
 
         if row > 2 or col > 2 or row < 0 or col < 0:
-            return False
+            return "Please click somewhere on the grid"
 
         if self.board.final[row][col]:
-            # todo: could return nice message that can be displayed in the UI
-            return False
+            return "This tile is final, and cannnot be chosen"
 
         # Check if the player does their two submoves on different tiles
         new_index = row * 3 + col
         if self.board.prevSubTurnIndex == new_index:
-            return False
+            return "Your second move needs to be a different tile"
 
-        return True
+        return False

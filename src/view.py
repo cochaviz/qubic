@@ -127,10 +127,10 @@ class Drawer():
 
         pg.display.update()
 
-    def draw_invalid_move(self):
-        self.draw_status_message("Please select a valid tile")
-
     def draw_status_message(self, message):
+        """
+        General method for drawing a message at the top of the screen
+        """
         # setting the font properties like
         # color and WIDTH of the text
         text = self.mono_font.render(message, 1, (255, 255, 255))
