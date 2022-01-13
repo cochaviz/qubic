@@ -108,16 +108,14 @@ class Drawer():
     def draw_final(self, board, padding=32):
         for row, li in enumerate(board.final):
             for col, el in enumerate(li):
-                if el is not None:
-                    print("collapse at " + str(row) + ", " + str(col))
-
+                if el:
                     posx = self.grid_left + (self.grid_cell_width + self.line_thickness_grid) * col
                     posy = self.grid_top + (self.grid_cell_height + self.line_thickness_grid) * row
 
                     self.screen.fill(self.BG_ALT, (posx, posy, self.grid_cell_width - self.line_thickness_grid, self.grid_cell_height - self.line_thickness_grid))
                     pg.display.update()
 
-                    self.draw_xo_at(board, posx + padding, posy + padding, ox_override= str.capitalize(board.board[row][col]), final=True, height=64)
+                    self.draw_xo_at(board, posx + padding, posy + padding, ox_override= str.capitalize(board.board[row][col][0]), final=True, height=64)
 
     def draw_quantum_xo(self, board, row, col, padding=15):
         """
