@@ -2,7 +2,7 @@ from string2png import str2png
 import pygame as pg
 
 IMG_RATIO = 118/84
-FINAL_IMG_RATIO = 45/86
+FINAL_IMG_RATIO = 0.564
 
 NEW_IMG_HEIGHT = 48
 
@@ -82,17 +82,17 @@ class Drawer():
         """
         if winner is None:
             if turn_num % 2 == 0:
-                message = "0's Turn"
+                message = "0's turn"
             else:
-                message = "1's Turn"
+                message = "1's turn"
 
             if sub_turn_num % 2 == 1:
-                message += " Again"
+                message += " again"
 
         elif winner == '-':
-            message = "Game Draw !"
+            message = "Game draw!"
         else:
-            message = winner + " won !"
+            message = ("1" if winner == "x" else "0") + " won!"
 
         # setting the font properties like
         # color and WIDTH of the text
