@@ -1,5 +1,5 @@
 import graph as graphlib
-from superposition_solver import resolve_superposition_quantic
+from superposition_solver import resolve_superposition
 from util import id_to_position
 
 
@@ -20,8 +20,8 @@ class Board:
         Resets the board
         """
         # 2d array with empty lists in every cell
-        self.board = [[[], [], []], \
-                      [[], [], []], \
+        self.board = [[[], [], []],
+                      [[], [], []],
                       [[], [], []]]
         self.final = [[False] * 3, [False] * 3, [False] * 3]
         self.winner = None
@@ -113,7 +113,7 @@ class Board:
             if self.subTurnNum % 2 == 1:
                 cycle = self.graph.get_cycle(new_index)
                 if cycle is not None:
-                    tile_to_mark = resolve_superposition_quantic(self.board, self.graph, cycle)
+                    tile_to_mark = resolve_superposition(self.board, self.graph, cycle, quantic=False)
 
                     # Mark all nodes in the cycle as final
                     for node_id in tile_to_mark.keys():

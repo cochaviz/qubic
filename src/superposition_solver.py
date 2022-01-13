@@ -1,9 +1,11 @@
+from random import getrandbits
+
 from circuit_solver import quantum_coin_flip
 from util import id_to_position
 
 
 # todo: not sure if it actually needs to return final marks too
-def resolve_superposition_quantic(board, graph, cycle):
+def resolve_superposition(board, graph, cycle, quantic=True):
     """
     returns dictionary containing tile -> final mark
 
@@ -16,7 +18,10 @@ def resolve_superposition_quantic(board, graph, cycle):
     [row, col] = id_to_position(node_id)
 
     # collapse state on board tile
-    coin_toss_res = quantum_coin_flip()
+    if quantic:
+        coin_toss_res = quantum_coin_flip()
+    else:
+        coin_toss_res = getrandbits(1)
     mark = board[row][col][coin_toss_res]  # get one random mark to collapse
 
     # handle collapse
@@ -35,7 +40,7 @@ def handle_collapse(mark, node_id, board, graph, visited):
     @param visited: set of states marks that have already been collapsed.
     """
     [row, col] = id_to_position(node_id)
-    board[row][col] = mark[0]   # get mark body: o or x
+    board[row][col] = mark[0]  # get mark body: o or x
 
     res = dict()
     res[node_id] = mark
@@ -43,8 +48,8 @@ def handle_collapse(mark, node_id, board, graph, visited):
     for edge in graph.nodes[node_id].edges:
         if edge.key not in visited:
             visited.add(edge.key)
-            res = dict(handle_collapse(edge.key, edge.end.id, board, graph, visited),
-                       **res)  # union of dict objects
+            res = {**handle_collapse(edge.key, edge.end.id, board, graph, visited),
+                   **res}  # union of dict objects
     return res
 
 # todo: could implement classical random solver or one where the plaer chooses which tile/state to collapse to
