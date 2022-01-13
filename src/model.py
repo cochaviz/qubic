@@ -20,7 +20,9 @@ class Board:
         Resets the board
         """
         # 2d array with empty lists in every cell
-        self.board = [[[], [], []], [[], [], []], [[], [], []]]
+        self.board = [[[], [], []], \
+                      [[], [], []], \
+                      [[], [], []]]
         self.final = [[False] * 3, [False] * 3, [False] * 3]
         self.winner = None
         self.turnNum = 1
@@ -90,7 +92,8 @@ class Board:
 
     def place(self, row, col, char):
         if row > 2 or col > 2 or row < 0 or col < 0:
-            raise IndexError("Out of bounds")
+            return False
+            # raise IndexError("Out of bounds")
 
         if self.final[row][col]:
             # todo: could return nice message that can be displayed in the UI

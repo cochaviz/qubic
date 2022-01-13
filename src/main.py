@@ -6,8 +6,6 @@ import time
 from model import *
 from view import *
 
-WIDTH = 500
-HEIGHT = 500
 FPS = 30
 
 
@@ -23,11 +21,10 @@ class Game:
 
         # this method is used to build the
         # infrastructure of the display
-        self.screen = pg.display.set_mode((WIDTH, HEIGHT + 100), 0, 32)
+        self.drawer = Drawer()
 
         # setting up a nametag for the
         # game window
-        pg.display.set_caption("My Tic Tac Toe")
 
         self.reset()
 
@@ -45,20 +42,20 @@ class Game:
                         break
 
                     row, col = self.user_click()
-
                     winner, winstate = self.state.take_turn(row, col)
+
                     if winner is False:
                         break
-                    draw_quantum_xo(self.state.board, row, col, self.screen)
 
-                    draw_status(self.state.board.turnNum, self.state.board.subTurnNum, winner, winstate, self.screen)
+                    self.drawer.draw_quantum_xo(self.state.board, row, col)
+                    self.drawer.draw_status(self.state.board.turnNum, self.state.board.subTurnNum, winner, winstate)
 
             pg.display.update()
             self.CLOCK.tick(FPS)
 
     def reset(self):
         self.state.reset()
-        init_window(self.screen)
+        self.drawer.init_window()
         time.sleep(.1)
 
     def user_click(self):
@@ -66,30 +63,35 @@ class Game:
         x, y = pg.mouse.get_pos()
 
         # get column of mouse click (1-3)
-        if (x < WIDTH / 3):
+        if x < self.drawer.grid_left:
+            col = -1
+        elif x < self.drawer.grid_left + self.drawer.grid_cell_width:
             col = 0
 
-        elif (x < WIDTH / 3 * 2):
+        elif x < self.drawer.grid_left + self.drawer.grid_cell_width * 2:
             col = 1
 
-        elif (x < WIDTH):
+        elif x < self.drawer.grid_left + self.drawer.grid_cell_width * 3:
             col = 2
 
         else:
-            col = None
+            col = -1
 
         # get row of mouse click (1-3)
-        if (y < HEIGHT / 3):
+        if y < self.drawer.grid_top:
+            row = -1
+
+        elif y < self.drawer.grid_top + self.drawer.grid_cell_height:
             row = 0
 
-        elif (y < HEIGHT / 3 * 2):
+        elif y < self.drawer.grid_top + self.drawer.grid_cell_height * 2:
             row = 1
 
-        elif (y < HEIGHT):
+        elif y < self.drawer.grid_top + self.drawer.grid_cell_height * 3:
             row = 2
 
         else:
-            row = None
+            row = -1
 
         return row, col
 
