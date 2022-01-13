@@ -42,7 +42,13 @@ class Game:
                         break
 
                     row, col = self.user_click()
-                    winner, winstate = self.state.take_turn(row, col)
+                    if not self.state.is_valid_move(row, col):
+                        #TODO: improve by specifying what is invalid about the move
+                        self.drawer.draw_invalid_move()
+                        break
+
+                    self.state.take_turn(row, col)
+                    winner, winstate = self.state.board.check_win()
 
                     if winner is False:
                         break

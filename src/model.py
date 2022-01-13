@@ -82,48 +82,35 @@ class Board:
         """
         Places an X on the specified location, returns False if the move was unsuccessful and True if succesful
         """
-        return self.place(row, col, 'x' + str(self.turnNum))
+        self.place(row, col, 'x' + str(self.turnNum))
 
     def place_o(self, row, col):
         """
         Places an O on the specified location, returns False if the move was unsuccessful and True if succesful
         """
-        return self.place(row, col, 'o' + str(self.turnNum))
+        self.place(row, col, 'o' + str(self.turnNum))
 
     def place(self, row, col, char):
-        if row > 2 or col > 2 or row < 0 or col < 0:
-            return False
-            # raise IndexError("Out of bounds")
-
-        if self.final[row][col]:
-            # todo: could return nice message that can be displayed in the UI
-            return False
-
-        # Check if the player does their two submoves on different tiles
         new_index = row * 3 + col
-        if self.prevSubTurnIndex == new_index:
-            return False
-
         self.board[row][col].append(char)
+
         if self.prevSubTurnIndex is not None:
             self.graph.add_edge(self.prevSubTurnIndex, new_index, char)
             self.prevSubTurnIndex = None
 
             # only need to do the check on the second sub-turn (end of turn)
-            if self.subTurnNum % 2 == 1:
-                cycle = self.graph.get_cycle(new_index)
-                if cycle is not None:
-                    tile_to_mark = resolve_superposition(self.board, self.graph, cycle, quantic=False)
+            # if self.subTurnNum % 2 == 1:
+            cycle = self.graph.get_cycle(new_index)
+            if cycle is not None:
+                tile_to_mark = resolve_superposition(self.board, self.graph, cycle, quantic=False)
 
-                    # Mark all nodes in the cycle as final
-                    for node_id in tile_to_mark.keys():
-                        [row, col] = id_to_position(node_id)
-                        self.final[row][col] = True
+                # Mark all nodes in the cycle as final
+                for node_id in tile_to_mark.keys():
+                    [row, col] = id_to_position(node_id)
+                    self.final[row][col] = True
 
-                    # Remove all edges and nodes that were in the cycle
-                    self.graph.remove_cycle(cycle)
-
-        return True
+                # Remove all edges and nodes that were in the cycle
+                self.graph.remove_cycle(cycle)
 
 
 class GameState:
@@ -139,15 +126,17 @@ class GameState:
         return self.board.turnNum % 2 == 1
 
     def take_turn(self, row, col):
-        if self.board.turnNum > 9 or self.board.winner is not None:
-            return self.board.check_win()
+        # if self.board.turnNum > 9 or self.board.winner is not None:
+            # return self.board.check_win()
 
         if self.x_moves():
-            if not self.board.place_x(row, col):
-                return False, None
+            self.board.place_x(row, col)
+            # if not self.board.place_x(row, col):
+            #     return False, None
         else:
-            if not self.board.place_o(row, col):
-                return False, None
+            self.board.place_o(row, col)
+            # if not self.board.place_o(row, col):
+            #   return False, None
 
         if self.board.subTurnNum == 1:
             self.board.turnNum += 1
@@ -156,7 +145,25 @@ class GameState:
 
         self.board.subTurnNum = (self.board.subTurnNum + 1) % 2
 
-        return self.board.check_win()
+        #return self.board.check_win()
 
     def reset(self):
         self.board.reset()
+
+    def is_valid_move(self, row, col):
+        if self.board.turnNum > 9 or self.board.winner is not None:
+            return False
+
+        if row > 2 or col > 2 or row < 0 or col < 0:
+            return False
+
+        if self.board.final[row][col]:
+            # todo: could return nice message that can be displayed in the UI
+            return False
+
+        # Check if the player does their two submoves on different tiles
+        new_index = row * 3 + col
+        if self.board.prevSubTurnIndex == new_index:
+            return False
+
+        return True

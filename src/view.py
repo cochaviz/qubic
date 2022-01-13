@@ -88,19 +88,12 @@ class Drawer():
 
         elif winner == '-':
             message = "Game Draw !"
+        elif winner == 'x':
+            message = "1 won !"
         else:
-            message = winner + " won !"
+            message = "0 won !"
 
-        # setting the font properties like
-        # color and WIDTH of the text
-        text = self.mono_font.render(message, 1, (255, 255, 255))
-
-        # copy the rendered message onto the board
-        # creating a small block at the bottom of the main display
-        self.screen.fill(self.BG, (0, 0, self.WIDTH, self.STATUS_HEIGHT))
-        text_rect = text.get_rect(center=(self.WIDTH / 2, self.STATUS_HEIGHT/2))
-        self.screen.blit(text, text_rect)
-        pg.display.update()
+        self.draw_status_message(message)
 
 
     def draw_quantum_xo(self, board, row, col, padding=15):
@@ -132,4 +125,19 @@ class Drawer():
 
             self.screen.blit(o_img, (posx, posy))
 
+        pg.display.update()
+
+    def draw_invalid_move(self):
+        self.draw_status_message("Please select a valid tile")
+
+    def draw_status_message(self, message):
+        # setting the font properties like
+        # color and WIDTH of the text
+        text = self.mono_font.render(message, 1, (255, 255, 255))
+
+        # copy the rendered message onto the board
+        # creating a small block at the bottom of the main display
+        self.screen.fill(self.BG, (0, 0, self.WIDTH, self.STATUS_HEIGHT))
+        text_rect = text.get_rect(center=(self.WIDTH / 2, self.STATUS_HEIGHT / 2))
+        self.screen.blit(text, text_rect)
         pg.display.update()
