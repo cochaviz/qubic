@@ -1,10 +1,12 @@
-from string2png import str2png
 import pygame as pg
 
 IMG_RATIO = 118/84
+FINAL_IMG_RATIO = 0.564
+
 NEW_IMG_HEIGHT = 48
 
-class Drawer():
+
+class Drawer:
     def __init__(self, RATIO=16/10, HEIGHT=720):
         # general settings
         self.HEIGHT = HEIGHT
@@ -24,6 +26,7 @@ class Drawer():
         # grid settings
         self.h_padding_grid = 100
         self.margin_grid = 50
+        self.line_thickness_grid = 2
         self.parse_grid_settings()
 
         # pygame init
@@ -42,7 +45,7 @@ class Drawer():
         self.grid_cell_width = (self.grid_right - self.grid_left) / 3
         self.grid_cell_height = (self.grid_bottom - self.grid_top) / 3
 
-    def draw_grid(self, margin=30, line_thickness=2):
+    def draw_grid(self, margin=30):
         """
         Draws the grid according to the given parameters
         """
@@ -58,12 +61,12 @@ class Drawer():
         bottom = self.grid_bottom - margin
 
         # drawing vertical lines
-        pg.draw.line(self.screen, self.LINE_COLOR, (width / 3 + self.grid_left, top), (width / 3 + self.grid_left, bottom), line_thickness)
-        pg.draw.line(self.screen, self.LINE_COLOR, (width / 3 * 2 + self.grid_left, top), (width / 3 * 2 + self.grid_left, bottom), line_thickness)
+        pg.draw.line(self.screen, self.LINE_COLOR, (width / 3 + self.grid_left, top), (width / 3 + self.grid_left, bottom), self.line_thickness_grid)
+        pg.draw.line(self.screen, self.LINE_COLOR, (width / 3 * 2 + self.grid_left, top), (width / 3 * 2 + self.grid_left, bottom), self.line_thickness_grid)
 
         # drawing horizontal lines
-        pg.draw.line(self.screen, self.LINE_COLOR, (left, height / 3 + self.grid_top), (right, height / 3 + self.grid_top), line_thickness)
-        pg.draw.line(self.screen, self.LINE_COLOR, (left, height / 3 * 2 + self.grid_top), (right, height / 3 * 2 + self.grid_top), line_thickness)
+        pg.draw.line(self.screen, self.LINE_COLOR, (left, height / 3 + self.grid_top), (right, height / 3 + self.grid_top), self.line_thickness_grid)
+        pg.draw.line(self.screen, self.LINE_COLOR, (left, height / 3 * 2 + self.grid_top), (right, height / 3 * 2 + self.grid_top), self.line_thickness_grid)
 
     def init_window(self):
         """
@@ -79,22 +82,31 @@ class Drawer():
         """
         if winner is None:
             if turn_num % 2 == 0:
-                message = "0's Turn"
+                message = "0's turn"
             else:
-                message = "1's Turn"
+                message = "1's turn"
 
             if sub_turn_num % 2 == 1:
-                message += " Again"
+                message += " again"
 
         elif winner == '-':
-            message = "Game Draw !"
-        elif winner == 'x':
-            message = "1 won !"
+            message = "Game draw!"
         else:
-            message = "0 won !"
+            message = ("1" if winner == "x" else "0") + " won!"
 
         self.draw_status_message(message)
 
+    def draw_final(self, board, padding=32):
+        for row, li in enumerate(board.final):
+            for col, el in enumerate(li):
+                if el:
+                    posx = self.grid_left + (self.grid_cell_width + self.line_thickness_grid) * col
+                    posy = self.grid_top + (self.grid_cell_height + self.line_thickness_grid) * row
+
+                    self.screen.fill(self.BG_ALT, (posx, posy, self.grid_cell_width - self.line_thickness_grid, self.grid_cell_height - self.line_thickness_grid))
+                    pg.display.update()
+
+                    self.draw_xo_at(board, posx + padding, posy + padding, ox_override= str.capitalize(board.board[row][col][0]), final=True, height=64)
 
     def draw_quantum_xo(self, board, row, col, padding=15):
         """
@@ -104,26 +116,23 @@ class Drawer():
         border_y = int((len(board.board[row][col]) - 1) / 3) * NEW_IMG_HEIGHT
         posy = self.grid_top + self.grid_cell_height * row + border_y + padding
 
+        self.draw_xo_at(board, posx, posy)
+
+    def draw_xo_at(self, board, posx, posy, ox_override=None, final=False, height=NEW_IMG_HEIGHT):
         correct_turnNum = board.turnNum
 
         if board.subTurnNum % 2 == 0:
             correct_turnNum -= 1
 
-        # X's turn
-        if correct_turnNum % 2 == 1:
-            string = "X" + str(correct_turnNum)
+        asset = "X" if correct_turnNum % 2 == 1 else "O"
 
-            x_img = pg.image.load("assets/"+string+".png")
-            x_img = pg.transform.smoothscale(x_img, (IMG_RATIO * NEW_IMG_HEIGHT, NEW_IMG_HEIGHT))
+        if ox_override is not None:
+            asset = ox_override
 
-            self.screen.blit(x_img, (posx, posy))
-        else:
-            string = "O" + str(correct_turnNum)
+        img = pg.image.load("assets/" + asset + ("F" if final else str(correct_turnNum)) + ".png")
+        img = pg.transform.smoothscale(img, ((FINAL_IMG_RATIO if final else IMG_RATIO) * height, height))
 
-            o_img = pg.image.load("assets/"+string+".png")
-            o_img = pg.transform.smoothscale(o_img, (IMG_RATIO * NEW_IMG_HEIGHT, NEW_IMG_HEIGHT))
-
-            self.screen.blit(o_img, (posx, posy))
+        self.screen.blit(img, (posx, posy))
 
         pg.display.update()
 
@@ -133,7 +142,7 @@ class Drawer():
         """
         # setting the font properties like
         # color and WIDTH of the text
-        text = self.mono_font.render(message, 1, (255, 255, 255))
+        text = self.mono_font.render(message, True, (255, 255, 255))
 
         # copy the rendered message onto the board
         # creating a small block at the bottom of the main display

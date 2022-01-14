@@ -57,6 +57,7 @@ class Game:
 
                     self.drawer.draw_quantum_xo(self.state.board, row, col)
                     self.drawer.draw_status(self.state.board.turnNum, self.state.board.subTurnNum, winner, winstate)
+                    self.drawer.draw_final(self.state.board)
 
             pg.display.update()
             self.CLOCK.tick(FPS)

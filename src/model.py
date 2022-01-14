@@ -75,7 +75,6 @@ class Board:
         if self.turnNum > 9:
             self.winner = '-'
             return self.winner, None
-
         return None, None
 
     def place_x(self, row, col):
