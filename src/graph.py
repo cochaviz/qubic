@@ -50,6 +50,10 @@ def path(edge, prev):
     return [cycle_node_ids, cycle_edge_keys]
 
 
+def get_reverse_edge(edge):
+    return Edge(edge.end, edge.start, edge.key)
+
+
 class Graph:
     def __init__(self):
         """
@@ -72,7 +76,7 @@ class Graph:
             self.add_node(id2)
 
         edge = Edge(self.nodes[id1], self.nodes[id2], key)
-        reverse_edge = Edge(self.nodes[id2], self.nodes[id1], key)
+        reverse_edge = get_reverse_edge(edge)
 
         self.nodes[id1].edges.append(edge)
         self.nodes[id2].edges.append(reverse_edge)
@@ -129,58 +133,9 @@ class Graph:
         Remove all nodes and edges in the node_edge_list from the graph
         node_edge_list has the following form: [[nodes], [edges]]
         """
-        for i in node_edge_list[1]:
-            self.edges.pop(i)
+        [nodes, edges] = node_edge_list
+        for node_key in nodes:
+            self.nodes.pop(node_key, '')
 
-        for i in node_edge_list[0]:
-            self.nodes.pop(i)
-
-
-def test1():
-    g = Graph()
-    g.add_node('1')
-    g.add_node('2')
-    g.add_node('3')
-    g.add_edge('1', '2', 'ab')
-    g.add_edge('2', '3', 'bc')
-    g.add_edge('3', '1', 'ca')
-
-    print(g.get_cycle('1'))
-    # expected: [['3', '2', '1'], ['ca', 'bc', 'ab']]
-
-
-def test2():
-    g = Graph()
-    g.add_node('1')
-    g.add_node('2')
-    g.add_edge('1', '2', 'a')
-    g.add_edge('1', '2', 'b')
-
-    print(g.get_cycle('1'))
-
-
-def test3():
-    g = Graph()
-    g.add_node('1')
-    g.add_node('2')
-    g.add_edge('1', '2', 'a')
-    g.add_edge('2', '1', 'b')
-
-    print(g.get_cycle('1'))
-
-
-def test4():
-    g = Graph()
-    g.add_node('a')
-    g.add_node('b')
-
-    g.add_edge('a', 'b', 'x1')
-    print(g.get_cycle('b'))
-    # expect: None
-
-
-if __name__ == "__main__":
-    test1()
-    test2()
-    test3()
-    test4()
+        for edge_key in edges:
+            self.edges.pop(edge_key, '')
