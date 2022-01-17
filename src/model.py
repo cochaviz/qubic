@@ -70,7 +70,7 @@ class Board:
                 self.winner = self.board[0][2]
                 return self.winner, ((0, 3), (3, 0))
 
-        if self.turnNum > 9:
+        if self.turnNum > 32:
             self.winner = '-'
             return self.winner, None
         return None, None
@@ -147,7 +147,7 @@ class GameState:
         Checks to see if a move is valid or not, based on the row and column coordinates
         Returns True if the move is valid, a message containing info on why not otherwise
         """
-        if self.board.turnNum > 9 or self.board.winner is not None:
+        if self.board.turnNum > 32 or self.board.winner is not None:
             return "The game is already over!"
 
         if row > 3 or col > 3 or row < 0 or col < 0:

@@ -141,6 +141,7 @@ class Drawer:
         else:
             asset = "X" if correct_turn_num % 2 == 1 else "O"
 
+        # todo: add all remaining pics
         img = pg.image.load("assets/" + asset + ("F" if final else str(correct_turn_num)) + ".png")
         img = pg.transform.smoothscale(img, ((FINAL_IMG_RATIO if final else IMG_RATIO) * height, height))
 
