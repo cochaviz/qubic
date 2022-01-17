@@ -1,13 +1,13 @@
 import pygame as pg
 
-IMG_RATIO = 118/84
-FINAL_IMG_RATIO = 0.564
+IMG_RATIO = 118 / 84
+FINAL_IMG_RATIO = 0.56
 
-NEW_IMG_HEIGHT = 48
+NEW_IMG_HEIGHT = 40
 
 
 class Drawer:
-    def __init__(self, RATIO=16/10, HEIGHT=720):
+    def __init__(self, RATIO=16 / 10, HEIGHT=900):
         # general settings
         self.HEIGHT = HEIGHT
         self.WIDTH = RATIO * self.HEIGHT
@@ -35,22 +35,23 @@ class Drawer:
 
     def parse_grid_settings(self):
         """
-        Parses the settings defined in the init function to generate some paramaters to improve quality of life
+        Parses the settings defined in the init function to generate some parameters to improve quality of life
         """
         self.grid_left = self.h_padding_grid
         self.grid_right = self.WIDTH - self.h_padding_grid
         self.grid_top = self.STATUS_HEIGHT
         self.grid_bottom = self.HEIGHT - self.TOOLBAR_HEIGHT
 
-        self.grid_cell_width = (self.grid_right - self.grid_left) / 3
-        self.grid_cell_height = (self.grid_bottom - self.grid_top) / 3
+        self.grid_cell_width = (self.grid_right - self.grid_left) / 4
+        self.grid_cell_height = (self.grid_bottom - self.grid_top) / 4
 
-    def draw_grid(self, margin=30):
+    def draw_grid(self, margin=7):
         """
         Draws the grid according to the given parameters
         """
         self.screen.fill(self.BG)
-        self.screen.fill(self.BG_ALT, (self.h_padding_grid, self.STATUS_HEIGHT, self.WIDTH - 2 * self.h_padding_grid, self.HEIGHT - self.TOOLBAR_HEIGHT - self.STATUS_HEIGHT))
+        self.screen.fill(self.BG_ALT, (self.h_padding_grid, self.STATUS_HEIGHT, self.WIDTH - 2 * self.h_padding_grid,
+                                       self.HEIGHT - self.TOOLBAR_HEIGHT - self.STATUS_HEIGHT))
 
         width = self.grid_right - self.grid_left
         height = self.grid_bottom - self.grid_top
@@ -60,13 +61,17 @@ class Drawer:
         top = self.grid_top + margin
         bottom = self.grid_bottom - margin
 
-        # drawing vertical lines
-        pg.draw.line(self.screen, self.LINE_COLOR, (width / 3 + self.grid_left, top), (width / 3 + self.grid_left, bottom), self.line_thickness_grid)
-        pg.draw.line(self.screen, self.LINE_COLOR, (width / 3 * 2 + self.grid_left, top), (width / 3 * 2 + self.grid_left, bottom), self.line_thickness_grid)
-
-        # drawing horizontal lines
-        pg.draw.line(self.screen, self.LINE_COLOR, (left, height / 3 + self.grid_top), (right, height / 3 + self.grid_top), self.line_thickness_grid)
-        pg.draw.line(self.screen, self.LINE_COLOR, (left, height / 3 * 2 + self.grid_top), (right, height / 3 * 2 + self.grid_top), self.line_thickness_grid)
+        # drawing vertical & horizontal lines
+        for i in range(1, 4):
+            # vertical line
+            pg.draw.line(self.screen, self.LINE_COLOR,
+                         # start and stop coordinates (x, y)
+                         (width / 4 * i + self.grid_left, top), (width / 4 * i + self.grid_left, bottom),
+                         self.line_thickness_grid)
+            # horizontal line
+            pg.draw.line(self.screen, self.LINE_COLOR,
+                         (left, height / 4 * i + self.grid_top), (right, height / 4 * i + self.grid_top),
+                         self.line_thickness_grid)
 
     def init_window(self):
         """
@@ -100,36 +105,43 @@ class Drawer:
         for row, li in enumerate(board.final):
             for col, el in enumerate(li):
                 if el:
-                    posx = self.grid_left + (self.grid_cell_width + self.line_thickness_grid) * col
-                    posy = self.grid_top + (self.grid_cell_height + self.line_thickness_grid) * row
+                    posx = self.grid_left + self.grid_cell_width * col + self.line_thickness_grid
+                    posy = self.grid_top + self.grid_cell_height * row + self.line_thickness_grid
 
-                    self.screen.fill(self.BG_ALT, (posx, posy, self.grid_cell_width - self.line_thickness_grid, self.grid_cell_height - self.line_thickness_grid))
+                    self.screen.fill(self.BG_ALT, (posx, posy, self.grid_cell_width - self.line_thickness_grid,
+                                                   self.grid_cell_height - self.line_thickness_grid))
+                    self.screen.fill(self.BG_ALT,
+                                     (posx, posy,
+                                      self.grid_cell_width - self.line_thickness_grid,
+                                      self.grid_cell_height - self.line_thickness_grid))
                     pg.display.update()
 
-                    self.draw_xo_at(board, posx + padding, posy + padding, ox_override= str.capitalize(board.board[row][col][0]), final=True, height=64)
+                    self.draw_xo_at(board, posx + padding, posy + padding,
+                                    ox_override=str.capitalize(board.board[row][col][0]), final=True, height=64)
 
     def draw_quantum_xo(self, board, row, col, padding=15):
         """
         Draws an X or O in the given (row, col) depending on the board state
         """
-        posx = self.grid_left + self.grid_cell_width * col + ((len(board.board[row][col]) - 1) % 3) * (IMG_RATIO * NEW_IMG_HEIGHT + padding) + padding
+        posx = self.grid_left + self.grid_cell_width * col + ((len(board.board[row][col]) - 1) % 3) * (
+                    IMG_RATIO * NEW_IMG_HEIGHT + padding) + padding
         border_y = int((len(board.board[row][col]) - 1) / 3) * NEW_IMG_HEIGHT
         posy = self.grid_top + self.grid_cell_height * row + border_y + padding
 
         self.draw_xo_at(board, posx, posy)
 
     def draw_xo_at(self, board, posx, posy, ox_override=None, final=False, height=NEW_IMG_HEIGHT):
-        correct_turnNum = board.turnNum
+        correct_turn_num = board.turnNum
 
         if board.subTurnNum % 2 == 0:
-            correct_turnNum -= 1
-
-        asset = "X" if correct_turnNum % 2 == 1 else "O"
+            correct_turn_num -= 1
 
         if ox_override is not None:
             asset = ox_override
+        else:
+            asset = "X" if correct_turn_num % 2 == 1 else "O"
 
-        img = pg.image.load("assets/" + asset + ("F" if final else str(correct_turnNum)) + ".png")
+        img = pg.image.load("assets/" + asset + ("F" if final else str(correct_turn_num)) + ".png")
         img = pg.transform.smoothscale(img, ((FINAL_IMG_RATIO if final else IMG_RATIO) * height, height))
 
         self.screen.blit(img, (posx, posy))

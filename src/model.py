@@ -1,6 +1,6 @@
 import graph as graphlib
 from superposition_solver import resolve_superposition
-from util import id_to_position
+from util import id_to_position, position_to_id
 
 
 class Board:
@@ -20,10 +20,12 @@ class Board:
         Resets the board
         """
         # 2d array with empty lists in every cell
-        self.board = [[[], [], []],
-                      [[], [], []],
-                      [[], [], []]]
-        self.final = [[False] * 3, [False] * 3, [False] * 3]
+        # todo: refactor
+        self.board = [[[], [], [], []],
+                      [[], [], [], []],
+                      [[], [], [], []],
+                      [[], [], [], []]]
+        self.final = [[False] * 4, [False] * 4, [False] * 4, [False] * 4]
         self.winner = None
         self.turnNum = 1
         self.subTurnNum = 0
@@ -42,35 +44,31 @@ class Board:
         # check that it is player's final move
         if self.subTurnNum == 0:
             # checking for winning rows
-            for row in range(0, 3):
-                if self.final[row][0] and self.final[row][1] and self.final[row][2] and \
-                        (self.board[row][0] == self.board[row][1] == self.board[row][2]) and \
-                        (self.board[row][0] is not None):
+            for row in range(0, 4):
+                if self.final[row][0] and self.final[row][1] and self.final[row][2] and self.final[row][3] and \
+                        (self.board[row][0] == self.board[row][1] == self.board[row][2] == self.board[row][3]):
                     self.winner = self.board[row][0]
-                    return self.winner, ((row, 0), (row, 2))
+                    return self.winner, ((row, 0), (row, 3))
 
             # checking for winning columns
-            for col in range(0, 3):
-                if self.final[0][col] and self.final[1][col] and self.final[2][col] and \
-                        (self.board[0][col] == self.board[1][col] == self.board[2][col]) and \
-                        (self.board[0][col] is not None):
+            for col in range(0, 4):
+                if self.final[0][col] and self.final[1][col] and self.final[2][col] and self.final[3][col] and \
+                        (self.board[0][col] == self.board[1][col] == self.board[2][col] == self.board[3][col]):
                     self.winner = self.board[0][col]
-                    return self.winner, ((0, col), (2, col))
+                    return self.winner, ((0, col), (3, col))
 
             # check for diagonal winners
-            if self.final[0][0] and self.final[1][1] and self.final[2][2] and \
-                    (self.board[0][0] == self.board[1][1] == self.board[2][2]) and \
-                    (self.board[0][0] is not None):
+            if self.final[0][0] and self.final[1][1] and self.final[2][2] and self.final[3][3] and \
+                    (self.board[0][0] == self.board[1][1] == self.board[2][2] == self.board[3][3]):
                 # game won diagonally left to right
                 self.winner = self.board[0][0]
-                return self.winner, ((0, 0), (2, 2))
+                return self.winner, ((0, 0), (3, 3))
 
-            if self.final[0][2] and self.final[1][1] and self.final[2][1] and \
-                    (self.board[0][2] == self.board[1][1] == self.board[2][0]) and \
-                    (self.board[0][2] is not None):
+            if self.final[0][3] and self.final[1][2] and self.final[2][1] and self.final[3][0] and \
+                    (self.board[0][3] == self.board[1][2] == self.board[2][1] == self.board[3][0]):
                 # game won diagonally right to left
                 self.winner = self.board[0][2]
-                return self.winner, ((0, 2), (2, 0))
+                return self.winner, ((0, 3), (3, 0))
 
         if self.turnNum > 9:
             self.winner = '-'
@@ -94,7 +92,7 @@ class Board:
         This method updates the board with the new character to be placed,
         and checks if a cycle needs to be collapsed, and does so if it is necessary
         """
-        new_index = row * 3 + col
+        new_index = position_to_id(row, col)
         self.board[row][col].append(char)
 
         if self.prevSubTurnIndex is not None:
@@ -107,7 +105,7 @@ class Board:
 
                 # Mark all nodes in the cycle as final
                 for node_id in tile_to_mark.keys():
-                    [row, col] = id_to_position(node_id)
+                    row, col = id_to_position(node_id)
                     self.final[row][col] = True
 
                 # Remove all edges and nodes that were in the cycle
@@ -137,7 +135,7 @@ class GameState:
         if self.board.subTurnNum == 1:
             self.board.turnNum += 1
         else:
-            self.board.prevSubTurnIndex = row * 3 + col
+            self.board.prevSubTurnIndex = position_to_id(row, col)
 
         self.board.subTurnNum = (self.board.subTurnNum + 1) % 2
 
@@ -152,14 +150,14 @@ class GameState:
         if self.board.turnNum > 9 or self.board.winner is not None:
             return "The game is already over!"
 
-        if row > 2 or col > 2 or row < 0 or col < 0:
+        if row > 3 or col > 3 or row < 0 or col < 0:
             return "Please click somewhere on the grid"
 
         if self.board.final[row][col]:
             return "This tile is final, and cannnot be chosen"
 
         # Check if the player does their two submoves on different tiles
-        new_index = row * 3 + col
+        new_index = position_to_id(row, col)
         if self.board.prevSubTurnIndex == new_index:
             return "Your second move needs to be a different tile"
 

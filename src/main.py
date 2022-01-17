@@ -83,6 +83,9 @@ class Game:
         elif x < self.drawer.grid_left + self.drawer.grid_cell_width * 3:
             col = 2
 
+        elif x < self.drawer.grid_left + self.drawer.grid_cell_width * 4:
+            col = 3
+
         else:
             col = -1
 
@@ -98,6 +101,9 @@ class Game:
 
         elif y < self.drawer.grid_top + self.drawer.grid_cell_height * 3:
             row = 2
+
+        elif y < self.drawer.grid_top + self.drawer.grid_cell_height * 4:
+            row = 3
 
         else:
             row = -1
