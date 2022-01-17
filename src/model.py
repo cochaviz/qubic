@@ -117,7 +117,9 @@ class Board:
 class GameState:
     def __init__(self):
         self.board = Board()
-        self.reset()
+        self.games_played = 0
+        self.first_player_uses = 'o'
+        self.board.reset()
 
     def x_moves(self):
         """
@@ -142,6 +144,8 @@ class GameState:
         self.board.subTurnNum = (self.board.subTurnNum + 1) % 2
 
     def reset(self):
+        self.games_played += 1
+        self.first_player_uses = 'x' if self.first_player_uses == 'o' else 'o'
         self.board.reset()
 
     def is_invalid_move(self, row, col):

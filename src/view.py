@@ -68,31 +68,47 @@ class Drawer:
         pg.draw.line(self.screen, self.LINE_COLOR, (left, height / 3 + self.grid_top), (right, height / 3 + self.grid_top), self.line_thickness_grid)
         pg.draw.line(self.screen, self.LINE_COLOR, (left, height / 3 * 2 + self.grid_top), (right, height / 3 * 2 + self.grid_top), self.line_thickness_grid)
 
-    def init_window(self):
+    def init_window(self, first_player_uses):
         """
         Initializes the window with the grid and status
         """
         self.draw_grid()
-        self.draw_status(1, 0, None, None)
+        self.draw_status(1, 0, None, first_player_uses)
 
-    def draw_status(self, turn_num, sub_turn_num, winner, coords):
+    def draw_status(self, turn_num, sub_turn_num, winner, first_player_uses):
         """
         Draws the status bar
         TODO Separate the status- and toolbars
         """
         if winner is None:
             if turn_num % 2 == 0:
-                message = "0's turn"
+                message = "Player " + ("2" if first_player_uses == 'x' else "1") + "'s turn"
             else:
-                message = "1's turn"
+                message = "Player " + ("1" if first_player_uses == 'x' else "2") + "'s turn"
+
+            # if first_player_uses == 'x':
+            #     if turn_num % 2 == 0:
+            #         message = "Player 2's turn"
+            #     else:
+            #         message = "Player 1's turn"
+            #
+            # else:
+            #     if turn_num % 2 == 0:
+            #         message = "Player 2's turn"
+            #     else:
+            #         message = "Player 1's turn"
 
             if sub_turn_num % 2 == 1:
                 message += " again"
 
         elif winner == '-':
             message = "Game draw!"
+
         else:
-            message = ("1" if winner == "x" else "0") + " won!"
+            if first_player_uses == 'x':
+                message = ("Player 1" if winner == "x" else "Player 2") + " won!"
+            else:
+                message = ("Player 2" if winner == "x" else "Player 1") + " won!"
 
         self.draw_status_message(message)
 

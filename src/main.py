@@ -56,7 +56,8 @@ class Game:
                         break
 
                     self.drawer.draw_quantum_xo(self.state.board, row, col)
-                    self.drawer.draw_status(self.state.board.turnNum, self.state.board.subTurnNum, winner, winstate)
+                    self.drawer.draw_status(self.state.board.turnNum, self.state.board.subTurnNum,
+                                            winner, self.state.first_player_uses)
                     self.drawer.draw_final(self.state.board)
 
             pg.display.update()
@@ -64,7 +65,7 @@ class Game:
 
     def reset(self):
         self.state.reset()
-        self.drawer.init_window()
+        self.drawer.init_window(self.state.first_player_uses)
         time.sleep(.1)
 
     def user_click(self):
