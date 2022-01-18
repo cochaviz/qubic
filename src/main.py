@@ -4,13 +4,16 @@ import sys
 import time
 
 from model import *
+from src.util import GameProperties
 from view import *
 
 FPS = 30
 
 
 class Game:
-    def __init__(self):
+    def __init__(self, dim=5):
+        GameProperties(dim)
+
         self.state = GameState()
 
         # initializing the pygame window
@@ -71,41 +74,21 @@ class Game:
         # get coordinates of mouse click
         x, y = pg.mouse.get_pos()
 
-        # get column of mouse click (1-3)
-        if x < self.drawer.grid_left:
+        dim = GameProperties.get_instance().dim
+
+        col = -1
+        row = -1
+        # get row of col of user click
+        for i in range(0, dim):
+            if x > self.drawer.grid_left + i * self.drawer.grid_cell_width:
+                col = i
+            if y > self.drawer.grid_top + i * self.drawer.grid_cell_height:
+                row = i
+
+        # check if outside grid
+        if x > self.drawer.grid_left + dim * self.drawer.grid_cell_width:
             col = -1
-        elif x < self.drawer.grid_left + self.drawer.grid_cell_width:
-            col = 0
-
-        elif x < self.drawer.grid_left + self.drawer.grid_cell_width * 2:
-            col = 1
-
-        elif x < self.drawer.grid_left + self.drawer.grid_cell_width * 3:
-            col = 2
-
-        elif x < self.drawer.grid_left + self.drawer.grid_cell_width * 4:
-            col = 3
-
-        else:
-            col = -1
-
-        # get row of mouse click (1-3)
-        if y < self.drawer.grid_top:
-            row = -1
-
-        elif y < self.drawer.grid_top + self.drawer.grid_cell_height:
-            row = 0
-
-        elif y < self.drawer.grid_top + self.drawer.grid_cell_height * 2:
-            row = 1
-
-        elif y < self.drawer.grid_top + self.drawer.grid_cell_height * 3:
-            row = 2
-
-        elif y < self.drawer.grid_top + self.drawer.grid_cell_height * 4:
-            row = 3
-
-        else:
+        if y > self.drawer.grid_top + dim * self.drawer.grid_cell_height:
             row = -1
 
         return row, col

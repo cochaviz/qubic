@@ -1,4 +1,5 @@
 import pygame as pg
+from util import GameProperties
 
 IMG_RATIO = 118 / 84
 FINAL_IMG_RATIO = 0.56
@@ -42,8 +43,10 @@ class Drawer:
         self.grid_top = self.STATUS_HEIGHT
         self.grid_bottom = self.HEIGHT - self.TOOLBAR_HEIGHT
 
-        self.grid_cell_width = (self.grid_right - self.grid_left) / 4
-        self.grid_cell_height = (self.grid_bottom - self.grid_top) / 4
+        dim = GameProperties.get_instance().dim
+
+        self.grid_cell_width = (self.grid_right - self.grid_left) / dim
+        self.grid_cell_height = (self.grid_bottom - self.grid_top) / dim
 
     def draw_grid(self, margin=7):
         """
@@ -61,16 +64,18 @@ class Drawer:
         top = self.grid_top + margin
         bottom = self.grid_bottom - margin
 
+        dim = GameProperties.get_instance().dim
+
         # drawing vertical & horizontal lines
-        for i in range(1, 4):
+        for i in range(1, dim):
             # vertical line
             pg.draw.line(self.screen, self.LINE_COLOR,
                          # start and stop coordinates (x, y)
-                         (width / 4 * i + self.grid_left, top), (width / 4 * i + self.grid_left, bottom),
+                         (width / dim * i + self.grid_left, top), (width / dim * i + self.grid_left, bottom),
                          self.line_thickness_grid)
             # horizontal line
             pg.draw.line(self.screen, self.LINE_COLOR,
-                         (left, height / 4 * i + self.grid_top), (right, height / 4 * i + self.grid_top),
+                         (left, height / dim * i + self.grid_top), (right, height / dim * i + self.grid_top),
                          self.line_thickness_grid)
 
     def init_window(self):

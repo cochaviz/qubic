@@ -1,7 +1,7 @@
 from random import getrandbits
 
 from circuit_solver import quantum_coin_flip
-from util import id_to_position
+from util import GameProperties
 
 
 # todo: not sure if it actually needs to return final marks too
@@ -15,7 +15,7 @@ def resolve_superposition(board, graph, cycle, quantic=True):
     # select square to be the collapse point
     node_id = nodes_id[0]
 
-    row, col = id_to_position(node_id)
+    row, col = GameProperties.id_to_position(node_id)
 
     # collapse state on board tile
     if quantic:
@@ -39,7 +39,7 @@ def handle_collapse(mark, node_id, board, graph, visited):
     @param graph: Graph
     @param visited: set of states marks that have already been collapsed.
     """
-    row, col = id_to_position(node_id)
+    row, col = GameProperties.id_to_position(node_id)
     board[row][col] = mark[0]  # get mark body: o or x
 
     res = dict()
