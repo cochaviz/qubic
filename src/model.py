@@ -117,8 +117,10 @@ class Board:
 class GameState:
     def __init__(self):
         self.board = Board()
-        self.games_played = 0
+        self.games_played = -1
         self.first_player_uses = 'o'
+        self.player1_score = 0
+        self.player2_score = 0
         self.board.reset()
 
     def x_moves(self):
@@ -143,7 +145,7 @@ class GameState:
 
         self.board.subTurnNum = (self.board.subTurnNum + 1) % 2
 
-    def reset(self):
+    def new_game(self):
         self.games_played += 1
         self.first_player_uses = 'x' if self.first_player_uses == 'o' else 'o'
         self.board.reset()
@@ -168,3 +170,18 @@ class GameState:
             return "Your second move needs to be a different tile"
 
         return False
+
+    def update_scores(self):
+        if self.board.winner == '-':
+            self.player1_score += 1
+            self.player2_score += 1
+        elif self.board.winner == 'x':
+            if self.first_player_uses == 'x':
+                self.player1_score += 2
+            else:
+                self.player2_score += 2
+        else:
+            if self.first_player_uses == 'x':
+                self.player2_score += 2
+            else:
+                self.player1_score += 2
