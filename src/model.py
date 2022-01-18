@@ -65,7 +65,7 @@ class Board:
                 self.winner = self.board[0][0]
                 return self.winner, ((0, 0), (2, 2))
 
-            if self.final[0][2] and self.final[1][1] and self.final[2][1] and \
+            if self.final[0][2] and self.final[1][1] and self.final[2][0] and \
                     (self.board[0][2] == self.board[1][1] == self.board[2][0]) and \
                     (self.board[0][2] is not None):
                 # game won diagonally right to left
