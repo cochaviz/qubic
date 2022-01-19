@@ -140,7 +140,7 @@ class Board:
                 # Mark all nodes in the cycle as final
                 for node_id in tile_to_mark.keys():
                     [row, col] = id_to_position(node_id)
-                    self.final[row][col] = int(tile_to_mark[node_id][1])
+                    self.final[row][col] = int(tile_to_mark[node_id][1:])
 
                 # Remove all edges and nodes that were in the cycle
                 self.graph.remove_cycle(cycle)
