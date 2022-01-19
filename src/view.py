@@ -9,7 +9,6 @@ NEW_IMG_HEIGHT = 40
 
 class Drawer:
     def __init__(self, RATIO=16 / 10, HEIGHT=900):
-        # todo: change
         # general settings
         self.button_group = None
 
@@ -84,10 +83,16 @@ class Drawer:
                          self.line_thickness_grid)
 
     def init_home_window(self):
+        """
+        Initializes the home window with a welcome status and buttons for selecting the board dimesnion.
+        """
         self.draw_welcome_status()
         self.draw_dim_buttons()
 
     def draw_welcome_status(self):
+        """
+        Draws the welcoming text at the top of the window.
+        """
         self.screen.fill(self.BG)
 
         text = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore " \
@@ -96,37 +101,46 @@ class Drawer:
                "cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in " \
                "culpa qui officia deserunt mollit anim id est laborum."
 
-        rect = pg.Rect(self.h_padding_grid, self.STATUS_HEIGHT,
-                       self.WIDTH - 2 * self.h_padding_grid, self.HEIGHT / 2)
+        # keep margin low for text to be at top of window
+        margin = 100
+        rect = pg.Rect(margin, margin,
+                       self.WIDTH - 2 * margin, self.HEIGHT / 2)
         self.draw_text(text, (255, 255, 255), rect, self.mono_font)
 
         pg.display.update()
 
     def draw_dim_buttons(self):
+        """
+        Draws draws text and buttons that allow user to select board dimension.
+        """
         text = self.mono_font.render("Please select a board dimension:", True, (255, 255, 255))
 
+        # place text on center-bottom part of window
         text_rect = text.get_rect(center=(self.WIDTH / 2, self.HEIGHT * 3 / 4))
 
         self.screen.blit(text, text_rect)
 
         # add buttons
         buttons_distance = 60
+        distance_from_text = 50
         # create rectangle for button
-        rect_3 = pg.Rect(self.WIDTH / 2 - self.DIM_BUTTONS_WIDTH * 3 / 2 - buttons_distance, self.HEIGHT * 3 / 4 + 50,
+        rect_3 = pg.Rect(self.WIDTH / 2 - self.DIM_BUTTONS_WIDTH * 3 / 2 - buttons_distance,
+                         self.HEIGHT * 3 / 4 + distance_from_text,
                          self.DIM_BUTTONS_WIDTH, self.DIM_BUTTONS_HEIGHT)
         # draw button
         self.draw_dim_button('3 x 3', rect_3)
 
-        rect_4 = pg.Rect(self.WIDTH / 2 - self.DIM_BUTTONS_WIDTH / 2, self.HEIGHT * 3 / 4 + 50,
+        rect_4 = pg.Rect(self.WIDTH / 2 - self.DIM_BUTTONS_WIDTH / 2, self.HEIGHT * 3 / 4 + distance_from_text,
                          self.DIM_BUTTONS_WIDTH, self.DIM_BUTTONS_HEIGHT)
         self.draw_dim_button('4 x 4', rect_4)
-        rect_5 = pg.Rect(self.WIDTH / 2 + self.DIM_BUTTONS_WIDTH / 2 + buttons_distance, self.HEIGHT * 3 / 4 + 50,
+        rect_5 = pg.Rect(self.WIDTH / 2 + self.DIM_BUTTONS_WIDTH / 2 + buttons_distance,
+                         self.HEIGHT * 3 / 4 + distance_from_text,
                          self.DIM_BUTTONS_WIDTH, self.DIM_BUTTONS_HEIGHT)
         self.draw_dim_button('5 x 5', rect_5)
 
         pg.display.update()
 
-        # todo: add comm
+        # keep buttons rectangles (with associated dimensions) to determine if user clicked on them
         self.button_group = [
             [rect_3, 3],
             [rect_4, 4],
@@ -134,6 +148,10 @@ class Drawer:
         ]
 
     def draw_dim_button(self, text, rect, rect_color=None, margin_color=(0, 0, 0), text_color=(255, 255, 255)):
+        """
+        Draws button with border and text at given position (rect)
+        @param rect: pygame.Rect or 4-tuple (float, float, float, float)
+        """
         if rect_color is None:
             rect_color = self.BG_ALT
 
@@ -143,6 +161,7 @@ class Drawer:
         pg.draw.rect(self.screen, margin_color, rect, 2)
 
         text_surface_obj = self.mono_font.render(text, True, text_color)
+        # put text in center of button
         text_rect = text_surface_obj.get_rect(center=rect_obj.center)
 
         self.screen.blit(text_surface_obj, text_rect)
@@ -243,6 +262,10 @@ class Drawer:
     # automatically wraps words
     # returns any text that didn't get blitted
     def draw_text(self, text, color, rect, font, line_spacing=10, center_text=True):
+        """
+        Wraps and draws text at position.
+        @param rect: pygame.Rect (or float 4-tuple) specifies region in which text is to be drawn.
+        """
         rect = pg.Rect(rect)
         y = rect.top
 
@@ -279,10 +302,3 @@ class Drawer:
             text = text[i:]
 
         return text
-
-
-class DimButton():
-
-    def __init__(self):
-        pass
-

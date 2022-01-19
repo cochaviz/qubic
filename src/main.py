@@ -10,9 +10,11 @@ FPS = 30
 
 
 class Game:
-    def __init__(self, dim=3):
-        # todo: change
-        GameProperties(dim, Views.HOME)
+    def __init__(self):
+        # init game properties
+        GameProperties(None, Views.HOME)
+
+        # game state
         self.state = None
 
         # initializing the pygame window
@@ -24,6 +26,8 @@ class Game:
         # this method is used to build the
         # infrastructure of the display
         self.drawer = Drawer()
+
+        # start on home window
         self.drawer.init_home_window()
 
     def run(self):

@@ -79,19 +79,7 @@ class Board:
                 self.winner = winner
                 return winner, winstate
 
-            # if self.final[0][0] and self.final[1][1] and self.final[2][2] and self.final[3][3] and \
-            #         (self.board[0][0] == self.board[1][1] == self.board[2][2] == self.board[3][3]):
-            #     # game won diagonally left to right
-            #     self.winner = self.board[0][0]
-            #     return self.winner, ((0, 0), (3, 3))
-            #
-            # if self.final[0][3] and self.final[1][2] and self.final[2][1] and self.final[3][0] and \
-            #         (self.board[0][3] == self.board[1][2] == self.board[2][1] == self.board[3][0]):
-            #     # game won diagonally right to left
-            #     self.winner = self.board[0][2]
-            #     return self.winner, ((0, 3), (3, 0))
-
-        # todo: add comments
+        # max allowed number of moves is equal to the number of squares on board
         if self.turnNum > dim ** 2:
             self.winner = '-'
             return self.winner, None
