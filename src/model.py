@@ -44,7 +44,7 @@ class Board:
             return self.winner, None
 
         # check that it is player's final move
-        elif self.subTurnNum == 0 and self.turnNum <= 9:
+        if self.subTurnNum == 0:
             # check for winning rows
             for row in range(0, 3):
                 all_final = True
@@ -103,7 +103,7 @@ class Board:
                 lowest_max_subscript = highest_final
                 return_value = first_elem, ((0, 2), (2, 0))
 
-        elif self.turnNum > 9:
+        if self.turnNum > 9 and return_value[0] is None:
             return_value = '-', None
 
         self.winner = return_value[0]

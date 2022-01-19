@@ -1,38 +1,38 @@
 from random import getrandbits
 from queue import Queue
 from collections import defaultdict
-import random
 
 from circuit_solver import quantum_coin_flip
 from util import id_to_position
 
 
 # todo: not sure if it actually needs to return final marks too
-def resolve_superposition_quantic(board, graph, cycle):
-    """
-    returns dictionary containing tile -> final mark
-
-    """
-    [nodes_id, _] = cycle
-
-    # select square to be the collapse point
-    node_id = nodes_id[0]
-
-    [row, col] = id_to_position(node_id)
-
-    # collapse state on board tile
-    coin_toss_res = quantum_coin_flip()
-    mark = board[row][col][coin_toss_res]  # get one random mark to collapse
-
-    # handle collapse
-    visited = {mark}
-    return handle_collapse(mark, node_id, board, graph, visited)
+# def resolve_superposition(board, graph, cycle, quantic=True):
+#     """
+#     returns dictionary containing tile -> final mark
+#     """
+#     [nodes_id, _] = cycle
+#
+#     # select square to be the collapse point
+#     node_id = nodes_id[0]
+#
+#     [row, col] = id_to_position(node_id)
+#
+#     # collapse state on board tile
+#     if quantic:
+#         coin_toss_res = quantum_coin_flip()
+#     else:
+#         coin_toss_res = getrandbits(1)
+#     mark = board[row][col][coin_toss_res]  # get one random mark to collapse
+#
+#     # handle collapse
+#     visited = {mark}
+#     return handle_collapse(mark, node_id, board, graph, visited)
 
 
 def handle_collapse(mark, node_id, board, graph, visited):
     """
     collapses all states involved in cycle on the board.
-
     @param mark: final, collapsed mark to placed on initial tile.
     @param node_id: id of tile where the mark should be placed.
     @param board: Board
@@ -55,7 +55,7 @@ def handle_collapse(mark, node_id, board, graph, visited):
 # todo: could implement classical random solver or one where the plaer chooses which tile/state to collapse to
 
 
-def resolve_superposition_quantic(board, graph, cycle):
+def resolve_superposition(board, graph, cycle, quantic=True):
     [_, edges_id] = cycle
 
     # select first edge to decide collapse
@@ -64,9 +64,10 @@ def resolve_superposition_quantic(board, graph, cycle):
 
     # decide the coin toss
     # coin_toss_res = quantum_coin_flip()
-    coin_toss_res = 0
-    if random.random() > 0.5:
-        coin_toss_res = 1
+    if quantic:
+        coin_toss_res = quantum_coin_flip()
+    else:
+        coin_toss_res = getrandbits(1)
 
     # either the key of this edge lands on the start or end node
     # it lands on the start node if coin toss is a 0, on the end node otherwise
@@ -91,7 +92,7 @@ def resolve_superposition_quantic(board, graph, cycle):
                 queue.put((edge_iter.key, edge_iter.end.id))
         [row, col] = id_to_position(node.id)
         board[row][col] = elem[0][0]
-        return_dict[node.id] = elem[0][0]
+        return_dict[node.id] = elem[0]
         decided_node_ids.append(node.id)
 
     return return_dict
