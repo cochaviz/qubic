@@ -3,7 +3,7 @@ import sys
 import time
 
 from model import *
-from src.util import Views
+from util import Views
 from view import *
 
 FPS = 30
@@ -51,6 +51,8 @@ class Game:
 
                     elif GameProperties.view() == Views.BOARD:
                         if self.state.board.winner is not None:
+                            self.state.update_scores()
+                            self.drawer.draw_scoreboard(self.state)
                             self.reset()
                             break
 
@@ -69,9 +71,9 @@ class Game:
                             break
 
                         self.drawer.draw_quantum_xo(self.state.board, row, col)
-                        self.drawer.draw_status(self.state.board.turnNum, self.state.board.subTurnNum, winner, winstate)
+                        self.drawer.draw_status(self.state.board.turnNum, self.state.board.subTurnNum,
+                                                winner, self.state.first_player_uses)
                         self.drawer.draw_final(self.state.board)
-
             pg.display.update()
             self.CLOCK.tick(FPS)
 
@@ -79,9 +81,8 @@ class Game:
         if self.state is None:
             self.state = GameState()
 
-        self.state.reset()
-        self.drawer.init_window()
-        # self.drawer.init_window()
+        self.state.new_game()
+        self.drawer.init_window(self.state)
         time.sleep(.1)
 
     def user_click(self):

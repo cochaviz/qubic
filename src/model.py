@@ -33,11 +33,6 @@ class Board:
         # dim x dim array with False in every cell
         self.final = [[False] * dim for _ in range(dim)]
 
-        # self.board = [[[], [], [], []],
-        #               [[], [], [], []],
-        #               [[], [], [], []],
-        #               [[], [], [], []]]
-        # self.final = [[False] * 4, [False] * 4, [False] * 4, [False] * 4]
         self.winner = None
         self.turnNum = 1
         self.subTurnNum = 0
@@ -49,67 +44,148 @@ class Board:
         Checks which player has won, returns a tuple where the first element is the winner and the
         second a tuple with coordinates for which column/row/diagonal is the winning one
         """
+        # Keep track of the lowest maximal subscript, to calculate the correct winner
+        lowest_max_subscript = 1000
+        return_value = None, None
+        dim = GameProperties.get_instance().dim
+
         # check if there is already a winner
         if self.winner is not None:
             return self.winner, None
 
-        dim = GameProperties.get_instance().dim
         # check that it is player's final move
-        if self.subTurnNum == 0:
-            # checking for winning rows
+        elif self.subTurnNum == 0:
+            # check for winning rows
             for row in range(0, dim):
-                if self.check_winning_row(row, dim):
-                    # if self.final[row][0] and self.final[row][1] and self.final[row][2] and self.final[row][3] and \
-                    #         (self.board[row][0] == self.board[row][1] == self.board[row][2] == self.board[row][3]):
-                    self.winner = self.board[row][0]
-                    return self.winner, ((row, 0), (row, dim - 1))
+                # winning mark, winning position, highest_final
+                winning_row = self.get_winning_row(row, dim, lowest_max_subscript)
+                if winning_row:
+                    return_value = winning_row[0], winning_row[1]
+                    lowest_max_subscript = winning_row[2]
 
-            # checking for winning columns
+            # check for winning columns
             for col in range(0, dim):
-                if self.check_winning_col(col, dim):
-                    # if self.final[0][col] and self.final[1][col] and self.final[2][col] and self.final[3][col] and \
-                    #         (self.board[0][col] == self.board[1][col] == self.board[2][col] == self.board[3][col]):
-                    self.winner = self.board[0][col]
-                    return self.winner, ((0, col), (dim - 1, col))
+                winning_col = self.get_winning_col(col, dim, lowest_max_subscript)
+                if winning_col:
+                    return_value = winning_col[0], winning_col[1]
+                    lowest_max_subscript = winning_col[2]
 
             # check for diagonal winners
-            diag_winner = self.check_diagonal_win(dim)
-            if diag_winner is not None:
-                winner, winstate = diag_winner
-                self.winner = winner
-                return winner, winstate
+            winning_diag = self.get_winning_diag(dim, lowest_max_subscript)
+            if winning_diag is not None:
+                return_value = winning_diag[0][0], winning_diag[0][1]
+                lowest_max_subscript = winning_diag[1]
 
         # max allowed number of moves is equal to the number of squares on board
-        if self.turnNum > dim ** 2:
-            self.winner = '-'
-            return self.winner, None
-        return None, None
+        elif self.turnNum > dim ** 2 and return_value[0] is None:
+            return_value = '', None
 
-    def check_winning_row(self, row, dim):
+        self.winner = return_value[0]
+        return return_value
+
+    def get_winning_row(self, row, dim, lowest_max_subscript):
         if dim < 2:
             raise ValueError('board dimension is too small.')
-        tiles_are_final = True
-        mark = self.board[row][0]
-        tiles_have_same_mark = True
-        for col in range(dim):
-            tiles_are_final = tiles_are_final and self.final[row][col]
-            tiles_have_same_mark = tiles_have_same_mark and mark == self.board[row][col]
 
-        return tiles_are_final and tiles_have_same_mark
+        return_value = None
 
-    def check_winning_col(self, col, dim):
+        if dim == 3 or dim == 4:
+            all_final = True
+            all_equal = True
+            first_elem = self.board[row][0]
+            highest_final = self.final[row][0]
+
+            for col in range(1, dim):
+                all_final &= self.final[row][col] > 0
+                all_equal &= first_elem == self.board[row][col]
+                highest_final = self.final[row][col] if self.final[row][col] > highest_final else highest_final
+
+            if all_equal and all_final and first_elem is not None and highest_final < lowest_max_subscript:
+                return_value = [first_elem, ((row, 0), (row, dim - 1)), highest_final]
+
+        elif dim == 5:
+            for starting_col in range(2):
+                for row in range(dim):
+                    all_final = True
+                    all_equal = True
+                    first_elem = self.board[row][starting_col]
+                    highest_final = self.final[row][starting_col]
+
+                    for col in range(starting_col + 1, dim):
+                        all_final &= self.final[row][col] > 0
+                        all_equal &= first_elem == self.board[row][col]
+                        highest_final = self.final[row][col] if self.final[row][col] > highest_final else highest_final
+
+                    if all_equal and all_final and first_elem is not None and highest_final < lowest_max_subscript:
+                        return_value = [first_elem, ((row, 0), (row, dim - 1)), highest_final]
+
+        return return_value
+
+    def get_winning_col(self, col, dim, lowest_max_subscript):
         if dim < 2:
             raise ValueError('board dimension is too small.')
-        tiles_are_final = True
-        mark = self.board[0][col]
-        tiles_have_same_mark = True
-        for row in range(dim):
-            tiles_are_final = tiles_are_final and self.final[row][col]
-            tiles_have_same_mark = tiles_have_same_mark and mark == self.board[row][col]
 
-        return tiles_are_final and tiles_have_same_mark
+        return_value = None
+        if dim == 3 or dim == 4:
+            all_final = True
+            all_equal = True
+            first_elem = self.board[0][col]
+            highest_final = self.final[0][col]
+            for row in range(1, dim):
+                all_final &= self.final[row][col] > 0
+                all_equal &= first_elem == self.board[row][col]
+                highest_final = self.final[row][col] if self.final[row][col] > highest_final else highest_final
 
-    def check_diagonal_win(self, dim):
+            if all_equal and all_final and first_elem is not None and highest_final < lowest_max_subscript:
+                return_value = first_elem, ((0, col), (dim - 1, col)), highest_final
+        elif dim == 5:
+            for starting_row in range(2):
+                all_final = True
+                all_equal = True
+                first_elem = self.board[starting_row][col]
+                highest_final = self.final[starting_row][col]
+                for row in range(1, dim):
+                    all_final &= self.final[row][col] > 0
+                    all_equal &= first_elem == self.board[row][col]
+                    highest_final = self.final[row][col] if self.final[row][col] > highest_final else highest_final
+
+                if all_equal and all_final and first_elem is not None and highest_final < lowest_max_subscript:
+                    return_value = first_elem, ((0, col), (dim - 1, col)), highest_final
+
+
+
+        return return_value
+
+    def get_winning_diag(self, dim, lowest_max_subscript):
+
+        # # check for diagonal winners, first top left to bottom right
+        # all_final = True
+        # all_equal = True
+        # first_elem = self.board[0][0]
+        # highest_final = self.final[0][0]
+        # for i in range(1, 3):
+        #     all_final &= self.final[i][i] > 0
+        #     all_equal &= first_elem == self.board[i][i]
+        #     highest_final = self.final[i][i] if self.final[i][i] > highest_final else highest_final
+        #
+        # if all_equal and all_final and first_elem is not None and highest_final < lowest_max_subscript:
+        #     lowest_max_subscript = highest_final
+        #     return_value = first_elem, ((0, 0), (2, 2))
+        #
+        # # check for diagonal winner from bottom left to top right
+        # all_final = True
+        # all_equal = True
+        # first_elem = self.board[0][2]
+        # highest_final = self.final[0][2]
+        # for i in range(1, 3):
+        #     all_final &= self.final[i][2 - i] > 0
+        #     all_equal &= first_elem == self.board[i][2 - i]
+        #     highest_final = self.final[i][2 - i] if self.final[i][2 - i] > highest_final else highest_final
+        #
+        # if all_equal and all_final and first_elem is not None and highest_final < lowest_max_subscript:
+        #     lowest_max_subscript = highest_final
+        #     return_value = first_elem, ((0, 2), (2, 0))
+
         if dim == 3:
             lines = THREE_BY_THREE_WINNING_LINES
         elif dim == 4:
@@ -119,23 +195,30 @@ class Board:
         else:
             raise ValueError('board dimension is not implemented.')
 
+        return_value = None
         for line in lines:
-            tiles_are_final = True
-            tiles_have_same_mark = True
-            mark = None
+            all_final = True
+            all_equal = True
+
+            # position of first node in line
+            row, col = GameProperties.id_to_position(line[0])
+
+            first_elem = self.board[row][col]
+            highest_final = self.final[row][col]
             for node_id in line:
                 row, col = GameProperties.id_to_position(node_id)
-                # todo: think about this
-                if mark is None:
-                    mark = self.board[row][col]
-                tiles_are_final = tiles_are_final and self.final[row][col]
-                tiles_have_same_mark = tiles_have_same_mark and mark == self.board[row][col]
-            if tiles_are_final and tiles_have_same_mark:
-                row, col = GameProperties.id_to_position(line[0])
-                last_row, last_col = GameProperties.id_to_position(line[-1])
-                return self.board[row][col], ((row, col), (last_row, last_col))
+                all_final &= self.final[row][col] > 0
+                all_equal &= first_elem == self.board[row][col]
 
-        return None
+            # if all_equal and all_final and first_elem is not None and highest_final < lowest_max_subscript:
+            #     lowest_max_subscript = highest_final
+            #     return_value = first_elem, ((0, 2), (2, 0))
+            if all_equal and all_final and first_elem is not None and highest_final < lowest_max_subscript:
+                last_row, last_col = GameProperties.id_to_position(line[-1])
+                lowest_max_subscript = highest_final
+                return_value = first_elem, ((row, col), (last_row, last_col))
+
+        return [return_value, lowest_max_subscript] if return_value is not None else None
 
     def place_x(self, row, col):
         """
@@ -168,7 +251,7 @@ class Board:
                 # Mark all nodes in the cycle as final
                 for node_id in tile_to_mark.keys():
                     row, col = GameProperties.id_to_position(node_id)
-                    self.final[row][col] = True
+                    self.final[row][col] = int(tile_to_mark[node_id][1:])
 
                 # Remove all edges and nodes that were in the cycle
                 self.graph.remove_cycle(cycle)
@@ -177,7 +260,11 @@ class Board:
 class GameState:
     def __init__(self):
         self.board = Board()
-        self.reset()
+        self.games_played = -1
+        self.first_player_uses = 'o'
+        self.player1_score = 0
+        self.player2_score = 0
+        self.board.reset()
 
     def x_moves(self):
         """
@@ -201,7 +288,9 @@ class GameState:
 
         self.board.subTurnNum = (self.board.subTurnNum + 1) % 2
 
-    def reset(self):
+    def new_game(self):
+        self.games_played += 1
+        self.first_player_uses = 'x' if self.first_player_uses == 'o' else 'o'
         self.board.reset()
 
     def is_invalid_move(self, row, col):
@@ -210,7 +299,7 @@ class GameState:
         Returns True if the move is valid, a message containing info on why not otherwise
         """
         dim = GameProperties.get_instance().dim
-        if self.board.turnNum > dim**2 or self.board.winner is not None:
+        if self.board.turnNum > dim ** 2 or self.board.winner is not None:
             return "The game is already over!"
 
         if row >= dim or col >= dim or row < 0 or col < 0:
@@ -227,3 +316,18 @@ class GameState:
             return "Your second move needs to be a different tile"
 
         return False
+
+    def update_scores(self):
+        if self.board.winner == '-':
+            self.player1_score += 1
+            self.player2_score += 1
+        elif self.board.winner == 'x':
+            if self.first_player_uses == 'x':
+                self.player1_score += 2
+            else:
+                self.player2_score += 2
+        else:
+            if self.first_player_uses == 'x':
+                self.player2_score += 2
+            else:
+                self.player1_score += 2

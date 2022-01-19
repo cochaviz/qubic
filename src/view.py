@@ -9,6 +9,7 @@ NEW_IMG_HEIGHT = 40
 
 class Drawer:
     def __init__(self, RATIO=16 / 10, HEIGHT=900):
+    # def __init__(self, RATIO=16/10, HEIGHT=820):
         # general settings
         self.button_group = None
 
@@ -17,7 +18,7 @@ class Drawer:
 
         self.DIM_BUTTONS_WIDTH = 120
         self.DIM_BUTTONS_HEIGHT = 50
-        self.TOOLBAR_HEIGHT = 100
+        self.TOOLBAR_HEIGHT = 200
         self.STATUS_HEIGHT = 100
 
         # colors
@@ -166,32 +167,37 @@ class Drawer:
 
         self.screen.blit(text_surface_obj, text_rect)
 
-    def init_window(self):
+    def init_window(self, game_state):
         """
         Initializes the window with the grid and status
         """
         self.parse_grid_settings()
         self.draw_grid()
-        self.draw_status(1, 0, None, None)
+        self.draw_status(1, 0, None, game_state.first_player_uses)
+        self.draw_scoreboard(game_state)
 
-    def draw_status(self, turn_num, sub_turn_num, winner, coords):
+    def draw_status(self, turn_num, sub_turn_num, winner, first_player_uses):
         """
         Draws the status bar
         TODO Separate the status- and toolbars
         """
         if winner is None:
             if turn_num % 2 == 0:
-                message = "0's turn"
+                message = "Player " + ("2" if first_player_uses == 'x' else "1") + "'s turn"
             else:
-                message = "1's turn"
+                message = "Player " + ("1" if first_player_uses == 'x' else "2") + "'s turn"
 
             if sub_turn_num % 2 == 1:
                 message += " again"
 
         elif winner == '-':
             message = "Game draw!"
+
         else:
-            message = ("1" if winner == "x" else "0") + " won!"
+            if first_player_uses == 'x':
+                message = "Player " + ("1" if winner == "x" else "2") + " won!"
+            else:
+                message = "Player " + ("2" if winner == "x" else "1") + " won!"
 
         self.draw_status_message(message)
 
@@ -235,7 +241,6 @@ class Drawer:
         else:
             asset = "X" if correct_turn_num % 2 == 1 else "O"
 
-        # todo: add all remaining pics
         img = pg.image.load("assets/" + asset + ("F" if final else str(correct_turn_num)) + ".png")
         img = pg.transform.smoothscale(img, ((FINAL_IMG_RATIO if final else IMG_RATIO) * height, height))
 
@@ -302,3 +307,28 @@ class Drawer:
             text = text[i:]
 
         return text
+
+    def draw_scoreboard(self, game_state):
+        """
+        Method for drawing the scoreboard at the bottom of the screen
+        """
+        message_points = "Player 1: {} points   Player 2: {} points"\
+            .format(game_state.player1_score, game_state.player2_score)
+        message_played = "Games played: {} game".format(game_state.games_played) \
+                         + ("s" if game_state.games_played != 1 else "")
+
+        # setting the font properties like
+        # color and WIDTH of the text
+        text_points = self.mono_font.render(message_points, True, (255, 255, 255))
+        text_played = self.mono_font.render(message_played, True, (255, 255, 255))
+
+        # copy the rendered message onto the board
+        # creating a small block at the bottom of the main display
+        # self.screen.fill(self.BG, (0, 0, self.WIDTH, self.STATUS_HEIGHT))
+        text_rect_points = text_points.get_rect(center=(self.WIDTH / 2, self.grid_bottom + self.TOOLBAR_HEIGHT * 2 / 3))
+        self.screen.blit(text_points, text_rect_points)
+
+        text_rect_played = text_played.get_rect(center=(self.WIDTH / 2, self.grid_bottom + self.TOOLBAR_HEIGHT * 5 / 6))
+        self.screen.blit(text_played, text_rect_played)
+
+        pg.display.update()
