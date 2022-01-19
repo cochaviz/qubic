@@ -1,20 +1,19 @@
 # importing the required libraries
-import pygame as pg
 import sys
 import time
 
 from model import *
-from src.util import GameProperties
+from src.util import Views
 from view import *
 
 FPS = 30
 
 
 class Game:
-    def __init__(self, dim=5):
-        GameProperties(dim)
-
-        self.state = GameState()
+    def __init__(self, dim=3):
+        # todo: change
+        GameProperties(dim, Views.HOME)
+        self.state = None
 
         # initializing the pygame window
         pg.init()
@@ -25,11 +24,7 @@ class Game:
         # this method is used to build the
         # infrastructure of the display
         self.drawer = Drawer()
-
-        # setting up a nametag for the
-        # game window
-
-        self.reset()
+        self.drawer.init_home_window()
 
     def run(self):
         while True:
@@ -40,34 +35,49 @@ class Game:
                     sys.exit()
 
                 elif event.type == pg.MOUSEBUTTONDOWN and pg.mouse.get_pressed()[0]:
-                    if self.state.board.winner is not None:
-                        self.reset()
-                        break
+                    if GameProperties.view() == Views.HOME:
+                        for button in self.drawer.button_group:
+                            # user clicked on button
+                            if button[0].collidepoint(event.pos):
+                                # change dimension to what user selected
+                                # and update view
+                                GameProperties(button[1], Views.BOARD)
+                                self.reset()
+                                break
 
-                    row, col = self.user_click()
+                    elif GameProperties.view() == Views.BOARD:
+                        if self.state.board.winner is not None:
+                            self.reset()
+                            break
 
-                    # Message is false if the move is valid
-                    message = self.state.is_invalid_move(row, col)
-                    if message:
-                        self.drawer.draw_status_message(message)
-                        break
+                        row, col = self.user_click()
 
-                    self.state.take_turn(row, col)
-                    winner, winstate = self.state.board.check_win()
+                        # Message is false if the move is valid
+                        message = self.state.is_invalid_move(row, col)
+                        if message:
+                            self.drawer.draw_status_message(message)
+                            break
 
-                    if winner is False:
-                        break
+                        self.state.take_turn(row, col)
+                        winner, winstate = self.state.board.check_win()
 
-                    self.drawer.draw_quantum_xo(self.state.board, row, col)
-                    self.drawer.draw_status(self.state.board.turnNum, self.state.board.subTurnNum, winner, winstate)
-                    self.drawer.draw_final(self.state.board)
+                        if winner is False:
+                            break
+
+                        self.drawer.draw_quantum_xo(self.state.board, row, col)
+                        self.drawer.draw_status(self.state.board.turnNum, self.state.board.subTurnNum, winner, winstate)
+                        self.drawer.draw_final(self.state.board)
 
             pg.display.update()
             self.CLOCK.tick(FPS)
 
     def reset(self):
+        if self.state is None:
+            self.state = GameState()
+
         self.state.reset()
         self.drawer.init_window()
+        # self.drawer.init_window()
         time.sleep(.1)
 
     def user_click(self):
