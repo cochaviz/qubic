@@ -38,6 +38,8 @@ class Game:
 
                 elif event.type == pg.MOUSEBUTTONDOWN and pg.mouse.get_pressed()[0]:
                     if self.state.board.winner is not None:
+                        self.state.update_scores()
+                        self.drawer.draw_scoreboard(self.state)
                         self.reset()
                         break
 
@@ -56,15 +58,16 @@ class Game:
                         break
 
                     self.drawer.draw_quantum_xo(self.state.board, row, col)
-                    self.drawer.draw_status(self.state.board.turnNum, self.state.board.subTurnNum, winner, winstate)
+                    self.drawer.draw_status(self.state.board.turnNum, self.state.board.subTurnNum,
+                                            winner, self.state.first_player_uses)
                     self.drawer.draw_final(self.state.board)
 
             pg.display.update()
             self.CLOCK.tick(FPS)
 
     def reset(self):
-        self.state.reset()
-        self.drawer.init_window()
+        self.state.new_game()
+        self.drawer.init_window(self.state)
         time.sleep(.1)
 
     def user_click(self):
