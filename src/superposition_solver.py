@@ -1,3 +1,5 @@
+from random import getrandbits
+
 from circuit_solver import quantum_coin_flip
 import random
 from util import id_to_position
@@ -41,7 +43,7 @@ def handle_collapse(mark, node_id, board, graph, visited):
     @param visited: set of states marks that have already been collapsed.
     """
     [row, col] = id_to_position(node_id)
-    board[row][col] = mark[0]   # get mark body: o or x
+    board[row][col] = mark[0]  # get mark body: o or x
 
     res = dict()
     res[node_id] = mark
@@ -49,8 +51,8 @@ def handle_collapse(mark, node_id, board, graph, visited):
     for edge in graph.nodes[node_id].edges:
         if edge.key not in visited:
             visited.add(edge.key)
-            res = dict(handle_collapse(edge.key, edge.end.id, board, graph, visited),
-                       **res)  # union of dict objects
+            res = {**handle_collapse(edge.key, edge.end.id, board, graph, visited),
+                   **res}  # union of dict objects
     return res
 
 # todo: could implement classical random solver or one where the plaer chooses which tile/state to collapse to

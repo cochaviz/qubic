@@ -1,16 +1,18 @@
-from string2png import str2png
 import pygame as pg
 
 IMG_RATIO = 118/84
+FINAL_IMG_RATIO = 0.564
+
 NEW_IMG_HEIGHT = 48
 
-class Drawer():
-    def __init__(self, RATIO=16/10, HEIGHT=720):
+
+class Drawer:
+    def __init__(self, RATIO=16/10, HEIGHT=820):
         # general settings
         self.HEIGHT = HEIGHT
         self.WIDTH = RATIO * self.HEIGHT
 
-        self.TOOLBAR_HEIGHT = 100
+        self.TOOLBAR_HEIGHT = 200
         self.STATUS_HEIGHT = 100
 
         # colors
@@ -24,6 +26,7 @@ class Drawer():
         # grid settings
         self.h_padding_grid = 100
         self.margin_grid = 50
+        self.line_thickness_grid = 2
         self.parse_grid_settings()
 
         # pygame init
@@ -42,7 +45,7 @@ class Drawer():
         self.grid_cell_width = (self.grid_right - self.grid_left) / 3
         self.grid_cell_height = (self.grid_bottom - self.grid_top) / 3
 
-    def draw_grid(self, margin=30, line_thickness=2):
+    def draw_grid(self, margin=30):
         """
         Draws the grid according to the given parameters
         """
@@ -58,50 +61,57 @@ class Drawer():
         bottom = self.grid_bottom - margin
 
         # drawing vertical lines
-        pg.draw.line(self.screen, self.LINE_COLOR, (width / 3 + self.grid_left, top), (width / 3 + self.grid_left, bottom), line_thickness)
-        pg.draw.line(self.screen, self.LINE_COLOR, (width / 3 * 2 + self.grid_left, top), (width / 3 * 2 + self.grid_left, bottom), line_thickness)
+        pg.draw.line(self.screen, self.LINE_COLOR, (width / 3 + self.grid_left, top), (width / 3 + self.grid_left, bottom), self.line_thickness_grid)
+        pg.draw.line(self.screen, self.LINE_COLOR, (width / 3 * 2 + self.grid_left, top), (width / 3 * 2 + self.grid_left, bottom), self.line_thickness_grid)
 
         # drawing horizontal lines
-        pg.draw.line(self.screen, self.LINE_COLOR, (left, height / 3 + self.grid_top), (right, height / 3 + self.grid_top), line_thickness)
-        pg.draw.line(self.screen, self.LINE_COLOR, (left, height / 3 * 2 + self.grid_top), (right, height / 3 * 2 + self.grid_top), line_thickness)
+        pg.draw.line(self.screen, self.LINE_COLOR, (left, height / 3 + self.grid_top), (right, height / 3 + self.grid_top), self.line_thickness_grid)
+        pg.draw.line(self.screen, self.LINE_COLOR, (left, height / 3 * 2 + self.grid_top), (right, height / 3 * 2 + self.grid_top), self.line_thickness_grid)
 
-    def init_window(self):
+    def init_window(self, game_state):
         """
         Initializes the window with the grid and status
         """
         self.draw_grid()
-        self.draw_status(1, 0, None, None)
+        self.draw_status(1, 0, None, game_state.first_player_uses)
+        self.draw_scoreboard(game_state)
 
-    def draw_status(self, turn_num, sub_turn_num, winner, coords):
+    def draw_status(self, turn_num, sub_turn_num, winner, first_player_uses):
         """
         Draws the status bar
         TODO Separate the status- and toolbars
         """
         if winner is None:
             if turn_num % 2 == 0:
-                message = "0's Turn"
+                message = "Player " + ("2" if first_player_uses == 'x' else "1") + "'s turn"
             else:
-                message = "1's Turn"
+                message = "Player " + ("1" if first_player_uses == 'x' else "2") + "'s turn"
 
             if sub_turn_num % 2 == 1:
-                message += " Again"
+                message += " again"
 
         elif winner == '-':
-            message = "Game Draw !"
+            message = "Game draw!"
+
         else:
-            message = winner + " won !"
+            if first_player_uses == 'x':
+                message = "Player " + ("1" if winner == "x" else "2") + " won!"
+            else:
+                message = "Player " + ("2" if winner == "x" else "1") + " won!"
 
-        # setting the font properties like
-        # color and WIDTH of the text
-        text = self.mono_font.render(message, 1, (255, 255, 255))
+        self.draw_status_message(message)
 
-        # copy the rendered message onto the board
-        # creating a small block at the bottom of the main display
-        self.screen.fill(self.BG, (0, 0, self.WIDTH, self.STATUS_HEIGHT))
-        text_rect = text.get_rect(center=(self.WIDTH / 2, self.STATUS_HEIGHT/2))
-        self.screen.blit(text, text_rect)
-        pg.display.update()
+    def draw_final(self, board, padding=32):
+        for row, li in enumerate(board.final):
+            for col, el in enumerate(li):
+                if el:
+                    posx = self.grid_left + (self.grid_cell_width + self.line_thickness_grid) * col
+                    posy = self.grid_top + (self.grid_cell_height + self.line_thickness_grid) * row
 
+                    self.screen.fill(self.BG_ALT, (posx, posy, self.grid_cell_width - self.line_thickness_grid, self.grid_cell_height - self.line_thickness_grid))
+                    pg.display.update()
+
+                    self.draw_xo_at(board, posx + padding, posy + padding, ox_override= str.capitalize(board.board[row][col][0]), final=True, height=64)
 
     def draw_quantum_xo(self, board, row, col, padding=15):
         """
@@ -111,25 +121,62 @@ class Drawer():
         border_y = int((len(board.board[row][col]) - 1) / 3) * NEW_IMG_HEIGHT
         posy = self.grid_top + self.grid_cell_height * row + border_y + padding
 
+        self.draw_xo_at(board, posx, posy)
+
+    def draw_xo_at(self, board, posx, posy, ox_override=None, final=False, height=NEW_IMG_HEIGHT):
         correct_turnNum = board.turnNum
 
         if board.subTurnNum % 2 == 0:
             correct_turnNum -= 1
 
-        # X's turn
-        if correct_turnNum % 2 == 1:
-            string = "X" + str(correct_turnNum)
+        asset = "X" if correct_turnNum % 2 == 1 else "O"
 
-            x_img = pg.image.load("assets/"+string+".png")
-            x_img = pg.transform.smoothscale(x_img, (IMG_RATIO * NEW_IMG_HEIGHT, NEW_IMG_HEIGHT))
+        if ox_override is not None:
+            asset = ox_override
 
-            self.screen.blit(x_img, (posx, posy))
-        else:
-            string = "O" + str(correct_turnNum)
+        img = pg.image.load("assets/" + asset + ("F" if final else str(correct_turnNum)) + ".png")
+        img = pg.transform.smoothscale(img, ((FINAL_IMG_RATIO if final else IMG_RATIO) * height, height))
 
-            o_img = pg.image.load("assets/"+string+".png")
-            o_img = pg.transform.smoothscale(o_img, (IMG_RATIO * NEW_IMG_HEIGHT, NEW_IMG_HEIGHT))
+        self.screen.blit(img, (posx, posy))
 
-            self.screen.blit(o_img, (posx, posy))
+        pg.display.update()
+
+    def draw_status_message(self, message):
+        """
+        General method for drawing a message at the top of the screen
+        """
+        # setting the font properties like
+        # color and WIDTH of the text
+        text = self.mono_font.render(message, True, (255, 255, 255))
+
+        # copy the rendered message onto the board
+        # creating a small block at the bottom of the main display
+        self.screen.fill(self.BG, (0, 0, self.WIDTH, self.STATUS_HEIGHT))
+        text_rect = text.get_rect(center=(self.WIDTH / 2, self.STATUS_HEIGHT / 2))
+        self.screen.blit(text, text_rect)
+        pg.display.update()
+
+    def draw_scoreboard(self, game_state):
+        """
+        Method for drawing the scoreboard at the bottom of the screen
+        """
+        message_points = "Player 1: {} points   Player 2: {} points"\
+            .format(game_state.player1_score, game_state.player2_score)
+        message_played = "Games played: {} game".format(game_state.games_played) \
+                         + ("s" if game_state.games_played != 1 else "")
+
+        # setting the font properties like
+        # color and WIDTH of the text
+        text_points = self.mono_font.render(message_points, True, (255, 255, 255))
+        text_played = self.mono_font.render(message_played, True, (255, 255, 255))
+
+        # copy the rendered message onto the board
+        # creating a small block at the bottom of the main display
+        # self.screen.fill(self.BG, (0, 0, self.WIDTH, self.STATUS_HEIGHT))
+        text_rect_points = text_points.get_rect(center=(self.WIDTH / 2, self.grid_bottom + self.TOOLBAR_HEIGHT * 2 / 3))
+        self.screen.blit(text_points, text_rect_points)
+
+        text_rect_played = text_played.get_rect(center=(self.WIDTH / 2, self.grid_bottom + self.TOOLBAR_HEIGHT * 5 / 6))
+        self.screen.blit(text_played, text_rect_played)
 
         pg.display.update()
