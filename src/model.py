@@ -23,7 +23,7 @@ class Board:
         self.board = [[[], [], []],
                       [[], [], []],
                       [[], [], []]]
-        self.final = [[False] * 3, [False] * 3, [False] * 3]
+        self.final = [[0] * 3, [0] * 3, [0] * 3]
         self.winner = None
         self.turnNum = 1
         self.subTurnNum = 0
@@ -35,47 +35,79 @@ class Board:
         Checks which player has won, returns a tuple where the first element is the winner and the
         second a tuple with coordinates for which column/row/diagonal is the winning one
         """
+        # Keep track of the lowest maximal subscript, to calculate the correct winner
+        lowest_max_subscript = 1000
+        return_value = None, None
+
         # check if there is already a winner
         if self.winner is not None:
             return self.winner, None
 
         # check that it is player's final move
-        if self.subTurnNum == 0:
-            # checking for winning rows
+        elif self.subTurnNum == 0:
+            # check for winning rows
             for row in range(0, 3):
-                if self.final[row][0] and self.final[row][1] and self.final[row][2] and \
-                        (self.board[row][0] == self.board[row][1] == self.board[row][2]) and \
-                        (self.board[row][0] is not None):
-                    self.winner = self.board[row][0]
-                    return self.winner, ((row, 0), (row, 2))
+                all_final = True
+                all_equal = True
+                first_elem = self.board[row][0]
+                highest_final = self.final[row][0]
+                for col in range(1, 3):
+                    all_final &= self.final[row][col] > 0
+                    all_equal &= first_elem == self.board[row][col]
+                    highest_final = self.final[row][col] if self.final[row][col] > highest_final else highest_final
 
-            # checking for winning columns
+                if all_equal and all_final and first_elem is not None and highest_final < lowest_max_subscript:
+                    lowest_max_subscript = highest_final
+                    return_value = first_elem, ((row, 0), (row, 2))
+
+            # check for winning columns
             for col in range(0, 3):
-                if self.final[0][col] and self.final[1][col] and self.final[2][col] and \
-                        (self.board[0][col] == self.board[1][col] == self.board[2][col]) and \
-                        (self.board[0][col] is not None):
-                    self.winner = self.board[0][col]
-                    return self.winner, ((0, col), (2, col))
+                all_final = True
+                all_equal = True
+                first_elem = self.board[0][col]
+                highest_final = self.final[0][col]
+                for row in range(1, 3):
+                    all_final &= self.final[row][col] > 0
+                    all_equal &= first_elem == self.board[row][col]
+                    highest_final = self.final[row][col] if self.final[row][col] > highest_final else highest_final
 
-            # check for diagonal winners
-            if self.final[0][0] and self.final[1][1] and self.final[2][2] and \
-                    (self.board[0][0] == self.board[1][1] == self.board[2][2]) and \
-                    (self.board[0][0] is not None):
-                # game won diagonally left to right
-                self.winner = self.board[0][0]
-                return self.winner, ((0, 0), (2, 2))
+                if all_equal and all_final and first_elem is not None and highest_final < lowest_max_subscript:
+                    lowest_max_subscript = highest_final
+                    return_value = first_elem, ((0, col), (2, col))
 
-            if self.final[0][2] and self.final[1][1] and self.final[2][0] and \
-                    (self.board[0][2] == self.board[1][1] == self.board[2][0]) and \
-                    (self.board[0][2] is not None):
-                # game won diagonally right to left
-                self.winner = self.board[0][2]
-                return self.winner, ((0, 2), (2, 0))
+            # check for diagonal winners, first top left to bottom right
+            all_final = True
+            all_equal = True
+            first_elem = self.board[0][0]
+            highest_final = self.final[0][0]
+            for i in range(1, 3):
+                all_final &= self.final[i][i] > 0
+                all_equal &= first_elem == self.board[i][i]
+                highest_final = self.final[i][i] if self.final[i][i] > highest_final else highest_final
 
-        if self.turnNum > 9:
-            self.winner = '-'
-            return self.winner, None
-        return None, None
+            if all_equal and all_final and first_elem is not None and highest_final < lowest_max_subscript:
+                lowest_max_subscript = highest_final
+                return_value = first_elem, ((0, 0), (2, 2))
+
+            # check for diagonal winner from bottom left to top right
+            all_final = True
+            all_equal = True
+            first_elem = self.board[0][2]
+            highest_final = self.final[0][2]
+            for i in range(1, 3):
+                all_final &= self.final[i][2-i] > 0
+                all_equal &= first_elem == self.board[i][2-i]
+                highest_final = self.final[i][2-i] if self.final[i][2-i] > highest_final else highest_final
+
+            if all_equal and all_final and first_elem is not None and highest_final < lowest_max_subscript:
+                lowest_max_subscript = highest_final
+                return_value = first_elem, ((0, 2), (2, 0))
+
+        elif self.turnNum > 9:
+            return_value = '-', None
+
+        self.winner = return_value[0]
+        return return_value
 
     def place_x(self, row, col):
         """
@@ -108,7 +140,7 @@ class Board:
                 # Mark all nodes in the cycle as final
                 for node_id in tile_to_mark.keys():
                     [row, col] = id_to_position(node_id)
-                    self.final[row][col] = True
+                    self.final[row][col] = int(tile_to_mark[node_id][1:])
 
                 # Remove all edges and nodes that were in the cycle
                 self.graph.remove_cycle(cycle)
