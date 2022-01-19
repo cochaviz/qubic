@@ -14,7 +14,7 @@ class Node:
 class Edge:
     def __init__(self, node1, node2, key):
         """
-        store the ids of the two nodes and the key, which is equal to the mark and turn number, eg 'x1' or 'o2'
+        store the ids of the two nodes and the key, which is equal to the turn number
         """
         self.start = node1
         self.end = node2
@@ -134,6 +134,7 @@ class Graph:
 
         for i in node_edge_list[0]:
             self.nodes.pop(i)
+
 
 def test1():
     g = Graph()
