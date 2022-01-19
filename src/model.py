@@ -44,7 +44,7 @@ class Board:
             return self.winner, None
 
         # check that it is player's final move
-        elif self.subTurnNum == 0 and self.turnNum != 9:
+        elif self.subTurnNum == 0 and self.turnNum <= 9:
             # check for winning rows
             for row in range(0, 3):
                 all_final = True
