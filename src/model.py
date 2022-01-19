@@ -44,7 +44,7 @@ class Board:
             return self.winner, None
 
         # check that it is player's final move
-        elif self.subTurnNum == 0:
+        elif self.subTurnNum == 0 and self.turnNum != 9:
             # check for winning rows
             for row in range(0, 3):
                 all_final = True
@@ -129,7 +129,7 @@ class Board:
         new_index = row * 3 + col
         self.board[row][col].append(char)
 
-        if self.prevSubTurnIndex is not None:
+        if self.prevSubTurnIndex is not None and self.prevSubTurnIndex != new_index:
             self.graph.add_edge(self.prevSubTurnIndex, new_index, char)
             self.prevSubTurnIndex = None
 
@@ -144,6 +144,10 @@ class Board:
 
                 # Remove all edges and nodes that were in the cycle
                 self.graph.remove_cycle(cycle)
+        # When there is 1 possible spot left:
+        elif self.prevSubTurnIndex == new_index:
+            self.board[row][col] = char[0]
+            self.final[row][col] = int(char[1:])
 
 
 class GameState:
@@ -198,8 +202,16 @@ class GameState:
 
         # Check if the player does their two submoves on different tiles
         new_index = row * 3 + col
-        if self.board.prevSubTurnIndex == new_index:
+        if self.board.turnNum < 9 and self.board.prevSubTurnIndex == new_index:
             return "Your second move needs to be a different tile"
+        # elif self.board.turnNum == 9 and self.board.prevSubTurnIndex == new_index:
+
+            # largest_subscript = 0
+            # for i in self.board.final:
+            #     for j in i:
+            #         largest_subscript = j if j > largest_subscript else largest_subscript
+            # if largest_subscript != 8:  # 8 == dim * dim - 1
+
 
         return False
 
