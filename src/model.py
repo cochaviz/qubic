@@ -54,7 +54,7 @@ class Board:
             return self.winner, None
 
         # check that it is player's final move
-        elif self.subTurnNum == 0:
+        if self.subTurnNum == 0:
             # check for winning rows
             for row in range(0, dim):
                 # winning mark, winning position, highest_final
