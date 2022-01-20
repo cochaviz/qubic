@@ -240,7 +240,7 @@ class Board:
         new_index = GameProperties.position_to_id(row, col)
         self.board[row][col].append(char)
 
-        if self.prevSubTurnIndex is not None:
+        if self.prevSubTurnIndex is not None and self.prevSubTurnIndex != new_index:
             self.graph.add_edge(self.prevSubTurnIndex, new_index, char)
             self.prevSubTurnIndex = None
 
@@ -255,6 +255,10 @@ class Board:
 
                 # Remove all edges and nodes that were in the cycle
                 self.graph.remove_cycle(cycle)
+        # When there is 1 possible spot left:
+        elif self.prevSubTurnIndex == new_index:
+            self.board[row][col] = char[0]
+            self.final[row][col] = int(char[1:])
 
 
 class GameState:
@@ -310,10 +314,22 @@ class GameState:
             print(self.board.final[row][col])
             return "This tile is final, and cannot be chosen"
 
-        # Check if the player does their two sub-moves on different tiles
+        # Check if the player does their two sub-moves on different tiles when it's not the last move
         new_index = GameProperties.position_to_id(row, col)
-        if self.board.prevSubTurnIndex == new_index:
+        if self.board.turnNum < dim ** 2 and self.board.prevSubTurnIndex == new_index:
             return "Your second move needs to be a different tile"
+
+        # When it is the last move, check if the player can move on another tile
+        elif self.board.turnNum == dim ** 2 and self.board.prevSubTurnIndex == new_index:
+            # Check to see how many spots are left (self.final[row][col] == 0) and allow the move
+            # if there is only 1 spot left
+            num_of_zeros = 0
+            for i in self.board.final:
+                for j in i:
+                    if j == 0:
+                        num_of_zeros += 1
+            if num_of_zeros > 1:
+                return "Your second move needs to be a different tile"
 
         return False
 
