@@ -3,7 +3,7 @@ from queue import Queue
 from collections import defaultdict
 
 from circuit_solver import quantum_coin_flip
-from util import id_to_position
+from util import GameProperties
 
 
 # todo: not sure if it actually needs to return final marks too
@@ -30,6 +30,7 @@ from util import id_to_position
 #     return handle_collapse(mark, node_id, board, graph, visited)
 
 
+
 def handle_collapse(mark, node_id, board, graph, visited):
     """
     collapses all states involved in cycle on the board.
@@ -39,7 +40,7 @@ def handle_collapse(mark, node_id, board, graph, visited):
     @param graph: Graph
     @param visited: set of states marks that have already been collapsed.
     """
-    [row, col] = id_to_position(node_id)
+    row, col = GameProperties.id_to_position(node_id)
     board[row][col] = mark[0]  # get mark body: o or x
 
     res = dict()
