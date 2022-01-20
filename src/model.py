@@ -31,7 +31,7 @@ class Board:
         # dim x dim array with empty lists in every cell
         self.board = [[[] for _ in range(dim)] for _ in range(dim)]
         # dim x dim array with False in every cell
-        self.final = [[False] * dim for _ in range(dim)]
+        self.final = [[0] * dim for _ in range(dim)]
 
         self.winner = None
         self.turnNum = 1
@@ -78,7 +78,7 @@ class Board:
 
         # max allowed number of moves is equal to the number of squares on board
         elif self.turnNum > dim ** 2 and return_value[0] is None:
-            return_value = '', None
+            return_value = '-', None
 
         self.winner = return_value[0]
         return return_value
@@ -101,7 +101,8 @@ class Board:
                 highest_final = self.final[row][col] if self.final[row][col] > highest_final else highest_final
 
             if all_equal and all_final and first_elem is not None and highest_final < lowest_max_subscript:
-                return_value = [first_elem, ((row, 0), (row, dim - 1)), highest_final]
+                lowest_max_subscript = highest_final
+                return_value = [first_elem, ((row, 0), (row, dim - 1)), lowest_max_subscript]
 
         elif dim == 5:
             for starting_col in range(2):
@@ -117,7 +118,8 @@ class Board:
                         highest_final = self.final[row][col] if self.final[row][col] > highest_final else highest_final
 
                     if all_equal and all_final and first_elem is not None and highest_final < lowest_max_subscript:
-                        return_value = [first_elem, ((row, 0), (row, dim - 1)), highest_final]
+                        lowest_max_subscript = highest_final
+                        return_value = [first_elem, ((row, 0), (row, dim - 1)), lowest_max_subscript]
 
         return return_value
 
@@ -137,7 +139,8 @@ class Board:
                 highest_final = self.final[row][col] if self.final[row][col] > highest_final else highest_final
 
             if all_equal and all_final and first_elem is not None and highest_final < lowest_max_subscript:
-                return_value = first_elem, ((0, col), (dim - 1, col)), highest_final
+                lowest_max_subscript = highest_final
+                return_value = first_elem, ((0, col), (dim - 1, col)), lowest_max_subscript
         elif dim == 5:
             for starting_row in range(2):
                 all_final = True
@@ -150,42 +153,12 @@ class Board:
                     highest_final = self.final[row][col] if self.final[row][col] > highest_final else highest_final
 
                 if all_equal and all_final and first_elem is not None and highest_final < lowest_max_subscript:
-                    return_value = first_elem, ((0, col), (dim - 1, col)), highest_final
-
-
+                    lowest_max_subscript = highest_final
+                    return_value = first_elem, ((0, col), (dim - 1, col)), lowest_max_subscript
 
         return return_value
 
     def get_winning_diag(self, dim, lowest_max_subscript):
-
-        # # check for diagonal winners, first top left to bottom right
-        # all_final = True
-        # all_equal = True
-        # first_elem = self.board[0][0]
-        # highest_final = self.final[0][0]
-        # for i in range(1, 3):
-        #     all_final &= self.final[i][i] > 0
-        #     all_equal &= first_elem == self.board[i][i]
-        #     highest_final = self.final[i][i] if self.final[i][i] > highest_final else highest_final
-        #
-        # if all_equal and all_final and first_elem is not None and highest_final < lowest_max_subscript:
-        #     lowest_max_subscript = highest_final
-        #     return_value = first_elem, ((0, 0), (2, 2))
-        #
-        # # check for diagonal winner from bottom left to top right
-        # all_final = True
-        # all_equal = True
-        # first_elem = self.board[0][2]
-        # highest_final = self.final[0][2]
-        # for i in range(1, 3):
-        #     all_final &= self.final[i][2 - i] > 0
-        #     all_equal &= first_elem == self.board[i][2 - i]
-        #     highest_final = self.final[i][2 - i] if self.final[i][2 - i] > highest_final else highest_final
-        #
-        # if all_equal and all_final and first_elem is not None and highest_final < lowest_max_subscript:
-        #     lowest_max_subscript = highest_final
-        #     return_value = first_elem, ((0, 2), (2, 0))
-
         if dim == 3:
             lines = THREE_BY_THREE_WINNING_LINES
         elif dim == 4:
@@ -310,8 +283,6 @@ class GameState:
             return "Please click somewhere on the grid"
 
         if self.board.final[row][col]:
-            print(row, col)
-            print(self.board.final[row][col])
             return "This tile is final, and cannot be chosen"
 
         # Check if the player does their two sub-moves on different tiles when it's not the last move

@@ -96,16 +96,19 @@ class Drawer:
         """
         self.screen.fill(self.BG)
 
-        text = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore " \
-               "et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut " \
-               "aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse " \
-               "cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in " \
-               "culpa qui officia deserunt mollit anim id est laborum."
+        text = "Welcome to Quantum Tic-Tac-Toe, *Qubic*! Instead of X's and O's, you can place two *basis states* " \
+               "of a qubit, namely: |0> and |1>. On each move, the current player marks *two* squares with their states, " \
+               "and each state is subscripted with the number of the move. The two squares are marked and called " \
+               "*entangled*. Once a *cyclic entanglement*, a cycle in the entanglement graph, occurs, a measurement is " \
+               "triggered and the cycle collapses to only one of the states on the square. Like in classical " \
+               "tic-tac-toe, the goal is achieve 3 connected states (for the 3x3 board) or 4 connected states " \
+               "(for 4x4 and 5x5 boards). Explore the quantum concepts of superposition, entanglement, and measurement; " \
+               "and increase your winning probability."
 
         # keep margin low for text to be at top of window
         margin = 100
         rect = pg.Rect(margin, margin,
-                       self.WIDTH - 2 * margin, self.HEIGHT / 2)
+                       self.WIDTH - 2 * margin, 2 * self.HEIGHT / 3)
         self.draw_text(text, (255, 255, 255), rect, self.mono_font)
 
         pg.display.update()
