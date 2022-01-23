@@ -50,39 +50,67 @@ class Game:
                                 break
 
                     elif GameProperties.view() == Views.BOARD:
+                        # todo: refactor
                         if self.state.board.winner is not None:
                             self.state.update_scores()
-                            self.drawer.draw_scoreboard(self.state)
                             self.reset()
                             break
 
-                        row, col = self.user_click()
+                        winner = None
 
-                        # Message is false if the move is valid
-                        message = self.state.is_invalid_move(row, col)
-                        if message:
-                            self.drawer.draw_status_message(message)
-                            break
+                        # gate selection
+                        # todo: check if clicked on gate panel
+                        if self.drawer.gate_panel.collidepoint(event.pos):
+                            for [rect, gate] in self.drawer.button_group:
+                                # user clicked on gate button
+                                if rect.collidepoint(event.pos) and self.state.get_moving_player().gates_count[gate] > 0:
+                                    message = "You selected {} gate, please type in a target state (ie: x1, o4): "\
+                                        .format(str.capitalize(gate.value))
+                                    print('\n' + message + '\nTarget state:')
+                                    target_state = input()
+                                    control_state = None
+                                    if gate == Gate.Gates.CNOT:
+                                        print('\nControl state:')
+                                        control_state = input()
+                                    if target_state == '' or control_state == '':
+                                        pass
+                                    if self.state.place_gate(gate, target_state, control_state):
+                                        print("Gate placed")
+                                    else:
+                                        print('Gate not placed')
+                                    break
 
-                        self.state.take_turn(row, col)
-                        winner, winstate = self.state.board.check_win()
+                        else:
+                            row, col = self.user_click()
 
-                        if winner is False:
-                            break
+                            # Message is false if the move is valid
+                            message = self.state.is_invalid_move(row, col)
+                            if message:
+                                self.drawer.draw_status_message(message)
+                                break
 
-                        self.drawer.draw_quantum_xo(self.state.board, row, col)
+                            # todo: refactor take turn to only return bool
+                            # todo: draw X or O in between
+                            # todo: and get winner, winstate from different method
+                            self.state.take_turn(row, col)
+                            winner, winstate = self.state.board.check_win()
+
+                            self.drawer.draw_quantum_xo(self.state.board, row, col)
+                            self.drawer.draw_final(self.state.board)
+
                         self.drawer.draw_status(self.state.board.turnNum, self.state.board.subTurnNum,
                                                 winner, self.state.first_player_uses)
-                        self.drawer.draw_final(self.state.board)
+                        self.drawer.draw_gate_panel(self.state.get_moving_player().gates_count, self.state.board.gates_list)
             pg.display.update()
             self.CLOCK.tick(FPS)
 
     def reset(self):
+        # todo: refactor
         if self.state is None:
             self.state = GameState()
 
         self.state.new_game()
-        self.drawer.init_window(self.state)
+        self.drawer.init_window(self.state, self.state.get_moving_player().gates_count, self.state.board.gates_list)
         time.sleep(.1)
 
     def user_click(self):

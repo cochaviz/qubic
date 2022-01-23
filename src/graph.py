@@ -124,6 +124,7 @@ class Graph:
                 layers[edge.end] = layer + 1
                 prev[edge.end] = edge
 
+    # todo: must fix!
     def remove_cycle(self, node_edge_list):
         """
         Remove all nodes and edges in the node_edge_list from the graph
@@ -134,6 +135,21 @@ class Graph:
 
         for i in node_edge_list[0]:
             self.nodes.pop(i)
+
+    def get_connected_nodes(self, node_id):
+        nodes = [node_id]
+        nodes_queue = [self.nodes[node_id]]
+
+        while len(nodes_queue) > 0:
+            for edge in nodes_queue.pop(0).edges:
+                if edge.end.id not in nodes:
+                    nodes_queue.append(edge.end)
+                    nodes.append(edge.end.id)
+                if edge.start.id not in nodes:
+                    nodes_queue.append(edge.start)
+                    nodes.append(edge.start.id)
+
+        return nodes
 
 
 def test1():

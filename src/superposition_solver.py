@@ -8,7 +8,7 @@ from util import GameProperties
 # todo: could implement classical random solver or one where the plaer chooses which tile/state to collapse to
 
 
-def resolve_superposition(board, graph, cycle, quantic=True):
+def resolve_superposition(graph, cycle, quantic=True):
     [_, edges_id] = cycle
 
     # select first edge to decide collapse
@@ -44,7 +44,7 @@ def resolve_superposition(board, graph, cycle, quantic=True):
             if edge_iter.key is not elem[0] and edge_iter.end.id not in decided_node_ids:
                 queue.put((edge_iter.key, edge_iter.end.id))
         row, col = GameProperties.id_to_position(node.id)
-        board[row][col] = elem[0][0]
+        # board[row][col] = elem[0][0]
         return_dict[node.id] = elem[0]
         decided_node_ids.append(node.id)
 

@@ -1,6 +1,10 @@
+from collections import defaultdict
+
 import graph as graphlib
+from gate import Gate
 from superposition_solver import resolve_superposition
 from util import GameProperties
+from circuit_solver import resolve_circuit
 
 # winning diagonal lines
 THREE_BY_THREE_WINNING_LINES = [[0, 4, 8], [2, 4, 6]]
@@ -19,7 +23,10 @@ class Board:
         self.turnNum = 1
         self.subTurnNum = 0
         self.prevSubTurnIndex = None
+        self.marks = set()
         self.graph = graphlib.Graph()
+
+        self.gates_list = []
 
         self.reset()
 
@@ -37,7 +44,9 @@ class Board:
         self.turnNum = 1
         self.subTurnNum = 0
         self.prevSubTurnIndex = None
+        self.marks.clear()
         self.graph = graphlib.Graph()
+        self.gates_list.clear()
 
     def check_win(self):
         """
@@ -215,11 +224,39 @@ class Board:
 
         if self.prevSubTurnIndex is not None and self.prevSubTurnIndex != new_index:
             self.graph.add_edge(self.prevSubTurnIndex, new_index, char)
+            self.marks.add(char)
             self.prevSubTurnIndex = None
 
             cycle = self.graph.get_cycle(new_index)
             if cycle is not None:
-                tile_to_mark = resolve_superposition(self.board, self.graph, cycle, quantic=False)
+                # first node in cycle
+                nodes = self.graph.get_connected_nodes(cycle[0][0])
+
+                marks_in_nodes = set()
+
+                for node in nodes:
+                    row, col = GameProperties.id_to_position(node)
+                    marks_in_nodes.update(self.board[row][col])
+
+                # gates involved in measurement
+                gates = []
+
+                for gate in self.gates_list:
+                    if gate.target_state in marks_in_nodes or gate.control_state in marks_in_nodes:
+                        gates.append(gate)
+
+                measurements = resolve_circuit(gates)
+
+                tile_to_mark = resolve_superposition(self.graph, cycle, quantic=False)
+
+                # todo: remove mark from self.marks
+                # todo: remove gate from self.gates_list
+                for tile, mark in tile_to_mark.items():
+                    row, col = GameProperties.id_to_position(tile)
+                    if mark in measurements.keys():
+                        self.board[row][col] = 'x' if measurements[mark] == 1 else 'o'
+                    else:
+                        self.board[row][col] = mark[0]
 
                 # Mark all nodes in the cycle as final
                 for node_id in tile_to_mark.keys():
@@ -234,13 +271,20 @@ class Board:
             self.final[row][col] = int(char[1:])
 
 
+# TODO: only measure gates that are inside the cycle
 class GameState:
     def __init__(self):
         self.board = Board()
         self.games_played = -1
+
+        # queue of players
+        # todo: update reset/new game method
+        self.players = [Player(), Player()]
+
         self.first_player_uses = 'o'
         self.player1_score = 0
         self.player2_score = 0
+
         self.board.reset()
 
     def x_moves(self):
@@ -260,10 +304,29 @@ class GameState:
 
         if self.board.subTurnNum == 1:
             self.board.turnNum += 1
+            self.players.append(self.players.pop(0))
         else:
             self.board.prevSubTurnIndex = GameProperties.position_to_id(row, col)
 
         self.board.subTurnNum = (self.board.subTurnNum + 1) % 2
+
+    # todo: move this to Board
+    def place_gate(self, gate, mark, control_state_index=None):
+        if self.board.subTurnNum != 0 or self.get_moving_player().gates_count[gate] == 0 or mark not in self.board.marks:
+            return False
+        if gate is Gate.Gates.CNOT:
+            if control_state_index is None or control_state_index not in self.board.marks:
+                return False
+            self.board.gates_list.append(Gate(mark, gate.value, control_state_index))
+        else:
+            self.board.gates_list.append(Gate(mark, gate.value))
+
+        self.get_moving_player().gates_count[gate] -= 1
+
+        self.board.turnNum += 1
+        self.players.append(self.players.pop(0))
+
+        return True
 
     def new_game(self):
         self.games_played += 1
@@ -304,6 +367,9 @@ class GameState:
 
         return False
 
+    def get_moving_player(self):
+        return self.players[0]
+
     def update_scores(self):
         if self.board.winner == '-':
             self.player1_score += 1
@@ -318,3 +384,19 @@ class GameState:
                 self.player2_score += 2
             else:
                 self.player1_score += 2
+
+
+class Player:
+    def __init__(self):
+        self.gates_count = defaultdict()
+
+        self.reset_gates_count()
+
+    def reset_gates_count(self):
+        dim = GameProperties.get_instance().dim
+
+        for gate in Gate.Gates:
+            # 1 of each gate for 3x3 game
+            # 2 per 4x4 game
+            # 3 per 5x5 game
+            self.gates_count[gate] = dim - 2

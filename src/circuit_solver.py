@@ -54,6 +54,9 @@ def resolve_circuit(gates_list):
     @return: dictionary with states as keys and their measured bit as value.
     @rtype: dict
     """
+    if len(gates_list) == 0:
+        return {}
+
     # array of qubits to be used in circuit
     qubits = []
 
@@ -67,6 +70,11 @@ def resolve_circuit(gates_list):
 
     q = QuantumRegister(len(qubits), 'q')
     qc = QuantumCircuit(q, name="tic-tac-toe circuit")
+
+    # todo: optimize this
+    for state in qubits:
+        if state[0] == 'x':
+            qc.x(q[qubits.index(state)])
 
     # add gates to quantum circuit
     for gate in gates_list:
@@ -103,7 +111,7 @@ def quantum_coin_flip():
     does a random measurement on an qubit in superposition, then
     returns a 0 or 1, with p(0) = p(1) = 50%
     """
-    qc = QuantumCircuit(1, name='coin-flip')    # quantum circuit with 1 qubit
+    qc = QuantumCircuit(1, name='coin-flip')  # quantum circuit with 1 qubit
 
     qc.h(0)  # place hadamard on qubit
 

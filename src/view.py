@@ -1,3 +1,6 @@
+import math
+from collections import defaultdict
+
 import pygame as pg
 from util import GameProperties
 
@@ -8,8 +11,8 @@ NEW_IMG_HEIGHT = 40
 
 
 class Drawer:
-    def __init__(self, RATIO=16 / 10, HEIGHT=900):
-    # def __init__(self, RATIO=16/10, HEIGHT=820):
+    def __init__(self, RATIO=16 / 10, HEIGHT=1000):
+    # def __init__(self, RATIO=16 / 10, HEIGHT=900):
         # general settings
         self.button_group = None
 
@@ -18,19 +21,22 @@ class Drawer:
 
         self.DIM_BUTTONS_WIDTH = 120
         self.DIM_BUTTONS_HEIGHT = 50
-        self.TOOLBAR_HEIGHT = 200
+        self.TOOLBAR_HEIGHT = 150
         self.STATUS_HEIGHT = 100
+
+        self.GATE_BUTTONS_WIDTH = 300
 
         # colors
         self.BG = (52, 52, 52)
         self.BG_ALT = (80, 80, 80)
+
         self.LINE_COLOR = (144, 144, 144)
 
         # font
         self.mono_font = pg.font.Font("assets/FiraCode.ttf", 30)
 
         # grid settings
-        self.h_padding_grid = 100
+        self.h_padding_grid = 30
         self.margin_grid = 50
         self.line_thickness_grid = 2
 
@@ -43,8 +49,8 @@ class Drawer:
         Parses the settings defined in the init function to generate some parameters to improve quality of life
         """
         self.grid_left = self.h_padding_grid
-        self.grid_right = self.WIDTH - self.h_padding_grid
-        self.grid_top = self.DIM_BUTTONS_HEIGHT + self.STATUS_HEIGHT
+        self.grid_right = self.WIDTH - self.GATE_BUTTONS_WIDTH - 2 * self.h_padding_grid
+        self.grid_top = self.STATUS_HEIGHT
         self.grid_bottom = self.HEIGHT - self.TOOLBAR_HEIGHT
 
         dim = GameProperties.get_instance().dim
@@ -57,9 +63,9 @@ class Drawer:
         Draws the grid according to the given parameters
         """
         self.screen.fill(self.BG)
-        self.screen.fill(self.BG_ALT, (self.h_padding_grid, self.DIM_BUTTONS_HEIGHT + self.STATUS_HEIGHT,
-                                       self.WIDTH - 2 * self.h_padding_grid,
-                                       self.HEIGHT - self.DIM_BUTTONS_HEIGHT - self.TOOLBAR_HEIGHT - self.STATUS_HEIGHT))
+        self.screen.fill(self.BG_ALT, (self.h_padding_grid, self.STATUS_HEIGHT,
+                                       self.WIDTH - self.GATE_BUTTONS_WIDTH - 3 * self.h_padding_grid,
+                                       self.HEIGHT - self.TOOLBAR_HEIGHT - self.STATUS_HEIGHT))
 
         width = self.grid_right - self.grid_left
         height = self.grid_bottom - self.grid_top
@@ -132,15 +138,15 @@ class Drawer:
                          self.HEIGHT * 3 / 4 + distance_from_text,
                          self.DIM_BUTTONS_WIDTH, self.DIM_BUTTONS_HEIGHT)
         # draw button
-        self.draw_dim_button('3 x 3', rect_3)
+        self.draw_button('3 x 3', rect_3)
 
         rect_4 = pg.Rect(self.WIDTH / 2 - self.DIM_BUTTONS_WIDTH / 2, self.HEIGHT * 3 / 4 + distance_from_text,
                          self.DIM_BUTTONS_WIDTH, self.DIM_BUTTONS_HEIGHT)
-        self.draw_dim_button('4 x 4', rect_4)
+        self.draw_button('4 x 4', rect_4)
         rect_5 = pg.Rect(self.WIDTH / 2 + self.DIM_BUTTONS_WIDTH / 2 + buttons_distance,
                          self.HEIGHT * 3 / 4 + distance_from_text,
                          self.DIM_BUTTONS_WIDTH, self.DIM_BUTTONS_HEIGHT)
-        self.draw_dim_button('5 x 5', rect_5)
+        self.draw_button('5 x 5', rect_5)
 
         pg.display.update()
 
@@ -151,7 +157,7 @@ class Drawer:
             [rect_5, 5]
         ]
 
-    def draw_dim_button(self, text, rect, rect_color=None, margin_color=(0, 0, 0), text_color=(255, 255, 255)):
+    def draw_button(self, text, rect, rect_color=None, margin_color=(0, 0, 0), text_color=(255, 255, 255)):
         """
         Draws button with border and text at given position (rect)
         @param rect: pygame.Rect or 4-tuple (float, float, float, float)
@@ -170,14 +176,17 @@ class Drawer:
 
         self.screen.blit(text_surface_obj, text_rect)
 
-    def init_window(self, game_state):
+    def init_window(self, game_state, gates_count, gates_list):
         """
         Initializes the window with the grid and status
         """
+        self.button_group = []
+
         self.parse_grid_settings()
         self.draw_grid()
         self.draw_status(1, 0, None, game_state.first_player_uses)
         self.draw_scoreboard(game_state)
+        self.draw_gate_panel(gates_count, gates_list)
 
     def draw_status(self, turn_num, sub_turn_num, winner, first_player_uses):
         """
@@ -261,8 +270,8 @@ class Drawer:
 
         # copy the rendered message onto the board
         # creating a small block at the bottom of the main display
-        self.screen.fill(self.BG, (0, self.DIM_BUTTONS_HEIGHT, self.WIDTH, self.STATUS_HEIGHT))
-        text_rect = text.get_rect(center=(self.WIDTH / 2, self.DIM_BUTTONS_HEIGHT + self.STATUS_HEIGHT / 2))
+        self.screen.fill(self.BG, (0, 0, self.WIDTH - self.GATE_BUTTONS_WIDTH, self.STATUS_HEIGHT))
+        text_rect = text.get_rect(center=((self.WIDTH - self.GATE_BUTTONS_WIDTH) / 2, self.STATUS_HEIGHT / 2))
         self.screen.blit(text, text_rect)
         pg.display.update()
 
@@ -272,6 +281,7 @@ class Drawer:
     def draw_text(self, text, color, rect, font, line_spacing=10, center_text=True):
         """
         Wraps and draws text at position.
+        @param color: text color
         @param rect: pygame.Rect (or float 4-tuple) specifies region in which text is to be drawn.
         """
         rect = pg.Rect(rect)
@@ -328,10 +338,58 @@ class Drawer:
         # copy the rendered message onto the board
         # creating a small block at the bottom of the main display
         # self.screen.fill(self.BG, (0, 0, self.WIDTH, self.STATUS_HEIGHT))
-        text_rect_points = text_points.get_rect(center=(self.WIDTH / 2, self.grid_bottom + self.TOOLBAR_HEIGHT * 2 / 3))
+        text_rect_points = text_points.get_rect(
+            center=((self.WIDTH - self.GATE_BUTTONS_WIDTH) / 2, self.grid_bottom + self.TOOLBAR_HEIGHT * 2 / 3))
         self.screen.blit(text_points, text_rect_points)
 
-        text_rect_played = text_played.get_rect(center=(self.WIDTH / 2, self.grid_bottom + self.TOOLBAR_HEIGHT * 5 / 6))
+        text_rect_played = text_played.get_rect(
+            center=((self.WIDTH - self.GATE_BUTTONS_WIDTH) / 2, self.grid_bottom + self.TOOLBAR_HEIGHT * 5 / 6))
         self.screen.blit(text_played, text_rect_played)
+
+        pg.display.update()
+
+    def draw_gate_panel(self, gates_count, gates_list):
+        # draw panel background
+        panel = pg.Rect(self.WIDTH - self.GATE_BUTTONS_WIDTH - self.h_padding_grid, self.STATUS_HEIGHT,
+                                       self.GATE_BUTTONS_WIDTH, self.HEIGHT - self.TOOLBAR_HEIGHT - self.STATUS_HEIGHT)
+        self.screen.fill(self.BG_ALT, panel)
+        self.gate_panel = panel
+
+        # could add text explaining how many gates mfs got
+
+        # draw gates buttons
+        dist_between_buttons = self.h_padding_grid / 2
+        button_width = (self.GATE_BUTTONS_WIDTH - 3 * dist_between_buttons) / 2
+        button_height = button_width
+        buttons_counter = 0
+        for gate, count in gates_count.items():
+            width_offset = dist_between_buttons + (dist_between_buttons + button_width) * (buttons_counter % 2)
+            height_offset = dist_between_buttons + (dist_between_buttons + button_height) * math.floor(buttons_counter / 2)
+            pos = pg.Rect(self.WIDTH - self.h_padding_grid - self.GATE_BUTTONS_WIDTH + width_offset,
+                          self.STATUS_HEIGHT + height_offset,
+                          button_width, button_height)
+            color = self.BG if count > 0 else self.BG_ALT
+            self.draw_button(str.upper(gate.value), pos, rect_color=color, margin_color=self.LINE_COLOR)
+            buttons_counter += 1
+            # add buttons to list
+            self.button_group.append([pos, gate])
+
+        # add text with previously placed gates
+        gates_counter = 0
+        text_height = 60
+        for gate in gates_list:
+            # def draw_text(self, text, color, rect, font, line_spacing=10, center_text=True):
+            text = "{}: {}".format(gate.gate_char, gate.target_state)
+            if gate.control_state is not None:
+                text += " <- {}".format(gate.control_state)
+
+            height_offset = dist_between_buttons \
+                            + (button_height + dist_between_buttons) * math.ceil(buttons_counter / 2) \
+                            + gates_counter * text_height
+            pos = pg.Rect(self.WIDTH - self.h_padding_grid - self.GATE_BUTTONS_WIDTH + dist_between_buttons,
+                          self.STATUS_HEIGHT + height_offset,
+                          self.GATE_BUTTONS_WIDTH - dist_between_buttons, text_height)
+            self.draw_text(text, (255, 255, 255), pos, self.mono_font, line_spacing=2, center_text=False)
+            gates_counter += 1
 
         pg.display.update()
