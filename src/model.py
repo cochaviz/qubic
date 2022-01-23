@@ -86,7 +86,7 @@ class Board:
                 lowest_max_subscript = winning_diag[1]
 
         # max allowed number of moves is equal to the number of squares on board
-        elif self.turnNum > dim ** 2 and return_value[0] is None:
+        if self.turnNum > dim ** 2 and return_value[0] is None:
             return_value = '-', None
 
         self.winner = return_value[0]
