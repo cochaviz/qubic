@@ -27,6 +27,7 @@ class Board:
         self.graph = graphlib.Graph()
 
         self.gates_list = []
+        self.gates_placed = 0
 
         self.reset()
 
@@ -46,7 +47,8 @@ class Board:
         self.prevSubTurnIndex = None
         self.marks.clear()
         self.graph = graphlib.Graph()
-        self.gates_list.clear()
+        self.gates_list = []
+        self.gates_placed = 0
 
     def check_win(self):
         """
@@ -86,7 +88,7 @@ class Board:
                 lowest_max_subscript = winning_diag[1]
 
         # max allowed number of moves is equal to the number of squares on board
-        if self.turnNum > dim ** 2 and return_value[0] is None:
+        if self.turnNum > dim ** 2 + self.gates_placed and return_value[0] is None:
             return_value = '-', None
 
         self.winner = return_value[0]
@@ -238,6 +240,9 @@ class Board:
                     row, col = GameProperties.id_to_position(node)
                     marks_in_nodes.update(self.board[row][col])
 
+                # remove marks from self.marks since they will be decided
+                self.marks -= marks_in_nodes
+
                 # gates involved in measurement
                 gates = []
 
@@ -245,18 +250,24 @@ class Board:
                     if gate.target_state in marks_in_nodes or gate.control_state in marks_in_nodes:
                         gates.append(gate)
 
+                # remove gate from self.gates_list
+                for gate in gates:
+                    try:
+                        self.gates_list.remove(gate)
+                    except ValueError:
+                        pass
+
                 measurements = resolve_circuit(gates)
 
                 tile_to_mark = resolve_superposition(self.graph, cycle, quantic=False)
 
-                # todo: remove mark from self.marks
-                # todo: remove gate from self.gates_list
                 for tile, mark in tile_to_mark.items():
                     row, col = GameProperties.id_to_position(tile)
                     if mark in measurements.keys():
                         self.board[row][col] = 'x' if measurements[mark] == 1 else 'o'
                     else:
                         self.board[row][col] = mark[0]
+
 
                 # Mark all nodes in the cycle as final
                 for node_id in tile_to_mark.keys():
@@ -325,6 +336,7 @@ class GameState:
 
         self.board.turnNum += 1
         self.players.append(self.players.pop(0))
+        self.board.gates_placed += 1
 
         return True
 
@@ -339,7 +351,7 @@ class GameState:
         Returns True if the move is valid, a message containing info on why not otherwise
         """
         dim = GameProperties.get_instance().dim
-        if self.board.turnNum > dim ** 2 or self.board.winner is not None:
+        if self.board.turnNum > dim ** 2 + self.board.gates_placed or self.board.winner is not None:
             return "The game is already over!"
 
         if row >= dim or col >= dim or row < 0 or col < 0:

@@ -43,7 +43,7 @@ def add_gate_to_circ(qubit_index, gate_char, qr, qc, control_qubit_index=None):
     else:
         raise ValueError('gate is not implemented')
 
-
+# change the order of the gates so that CX is emasured last
 def resolve_circuit(gates_list):
     """
     Resolves the given list of gates on the QuantumInspire backend(QX single-node simulator).
@@ -88,6 +88,14 @@ def resolve_circuit(gates_list):
 
     qc.measure_all()
 
+    # try:
+    #     qi_job = execute(qc, backend=starmon_qi_backend, shots=1)
+    #     qi_result = qi_job.result()
+    #     histogram = qi_result.get_counts(qc)
+    # except:
+    #     qi_job = execute(qc, backend=qi_backend, shots=1)
+    #     qi_result = qi_job.result()
+    #     histogram = qi_result.get_counts(qc)
     qi_job = execute(qc, backend=qi_backend, shots=1)
     qi_result = qi_job.result()
     histogram = qi_result.get_counts(qc)

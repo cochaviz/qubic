@@ -64,6 +64,7 @@ class Game:
                             for [rect, gate] in self.drawer.button_group:
                                 # user clicked on gate button
                                 if rect.collidepoint(event.pos) and self.state.get_moving_player().gates_count[gate] > 0:
+                                    # todo: change status
                                     message = "You selected {} gate, please type in a target state (ie: x1, o4): "\
                                         .format(str.capitalize(gate.value))
                                     print('\n' + message + '\nTarget state:')
@@ -73,7 +74,7 @@ class Game:
                                         print('\nControl state:')
                                         control_state = input()
                                     if target_state == '' or control_state == '':
-                                        pass
+                                        print('Gate not placed')
                                     if self.state.place_gate(gate, target_state, control_state):
                                         print("Gate placed")
                                     else:

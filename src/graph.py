@@ -124,7 +124,6 @@ class Graph:
                 layers[edge.end] = layer + 1
                 prev[edge.end] = edge
 
-    # todo: must fix!
     def remove_cycle(self, node_edge_list):
         """
         Remove all nodes and edges in the node_edge_list from the graph
@@ -132,6 +131,11 @@ class Graph:
         """
         for i in node_edge_list[1]:
             self.edges.pop(i)
+
+        for node in self.nodes.values():
+            for edge in node.edges:
+                if edge.end.id in node_edge_list[0]:
+                    node.edges.remove(edge)
 
         for i in node_edge_list[0]:
             self.nodes.pop(i)
@@ -150,53 +154,3 @@ class Graph:
                     nodes.append(edge.start.id)
 
         return nodes
-
-
-def test1():
-    g = Graph()
-    g.add_node('1')
-    g.add_node('2')
-    g.add_node('3')
-    g.add_edge('1', '2', 'ab')
-    g.add_edge('2', '3', 'bc')
-    g.add_edge('3', '1', 'ca')
-
-    print(g.get_cycle('1'))
-    # expected: [['3', '2', '1'], ['ca', 'bc', 'ab']]
-
-
-def test2():
-    g = Graph()
-    g.add_node('1')
-    g.add_node('2')
-    g.add_edge('1', '2', 'a')
-    g.add_edge('1', '2', 'b')
-
-    print(g.get_cycle('1'))
-
-
-def test3():
-    g = Graph()
-    g.add_node('1')
-    g.add_node('2')
-    g.add_edge('1', '2', 'a')
-    g.add_edge('2', '1', 'b')
-
-    print(g.get_cycle('1'))
-
-
-def test4():
-    g = Graph()
-    g.add_node('a')
-    g.add_node('b')
-
-    g.add_edge('a', 'b', 'x1')
-    print(g.get_cycle('b'))
-    # expect: None
-
-
-if __name__ == "__main__":
-    test1()
-    test2()
-    test3()
-    test4()
