@@ -132,6 +132,11 @@ class Graph:
         for i in node_edge_list[1]:
             self.edges.pop(i)
 
+        for node in self.nodes.values():
+            for edge in node.edges:
+                if edge.end.id in node_edge_list[0]:
+                    node.edges.remove(edge)
+
         for i in node_edge_list[0]:
             self.nodes.pop(i)
 
