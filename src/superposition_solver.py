@@ -30,7 +30,7 @@ def resolve_superposition(board, graph, cycle, quantic=True):
 
     # Use a queue of tuples to resolve all edges, where the tuples contain:
     # (key of edge, id of node where this key must land)
-    queue = Queue(maxsize=9)
+    queue = Queue(maxsize=GameProperties.get_instance().dim ** 2)
     queue.put((edge_id, node_id))
     return_dict = defaultdict(lambda: -1)
     decided_node_ids = []
