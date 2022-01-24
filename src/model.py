@@ -217,17 +217,6 @@ class Board:
             self.graph.add_edge(self.prevSubTurnIndex, new_index, char)
             self.prevSubTurnIndex = None
 
-            # cycle = self.graph.get_cycle(new_index)
-            # if cycle is not None:
-            #     tile_to_mark = resolve_superposition(self.board, self.graph, cycle)
-            #
-            #     # Mark all nodes in the cycle as final
-            #     for node_id in tile_to_mark.keys():
-            #         row, col = GameProperties.id_to_position(node_id)
-            #         self.final[row][col] = int(tile_to_mark[node_id][1:])
-            #
-            #     # Remove all edges and nodes that were in the cycle
-            #     self.graph.remove_cycle(cycle)
         # When there is 1 possible spot left:
         elif self.prevSubTurnIndex == new_index:
             self.board[row][col] = char[0]
