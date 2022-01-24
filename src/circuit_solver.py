@@ -13,7 +13,6 @@ QI.set_authentication(authentication, QI_URL)
 
 qi_backend = QI.get_backend('QX single-node simulator')
 starmon_qi_backend = QI.get_backend('Starmon-5')
-coin_flip_return = None
 
 
 def add_gate_to_circ(qubit_index, gate_char, qr, qc, control_qubit_index=None):
