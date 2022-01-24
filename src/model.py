@@ -281,6 +281,33 @@ class Board:
             self.board[row][col] = char[0]
             self.final[row][col] = int(char[1:])
 
+    def has_cycle(self, row, col):
+        """
+        Check if the game in this state has a cycle.
+        """
+        if self.prevSubTurnIndex is None:
+            new_index = GameProperties.position_to_id(row, col)
+            cycle = self.graph.get_cycle(new_index)
+            if cycle is not None:
+                return cycle
+        return None
+
+    def resolve_cycle(self, cycle):
+        """
+        The cycle that is provided as an argument is resolved, by collapsing the superposition
+        and deleting the cycle from the graph.
+        """
+
+        tile_to_mark = resolve_superposition(self.board, self.graph, cycle)
+
+        # Mark all nodes in the cycle as final
+        for node_id in tile_to_mark.keys():
+            row, col = GameProperties.id_to_position(node_id)
+            self.final[row][col] = int(tile_to_mark[node_id][1:])
+
+        # Remove all edges and nodes that were in the cycle
+        self.graph.remove_cycle(cycle)
+
 
 # TODO: only measure gates that are inside the cycle
 class GameState:

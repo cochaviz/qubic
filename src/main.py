@@ -5,6 +5,7 @@ import time
 from model import *
 from util import Views
 from view import *
+import threading
 
 FPS = 30
 
@@ -90,14 +91,41 @@ class Game:
                                 self.drawer.draw_status_message(message)
                                 break
 
+####
                             # todo: refactor take turn to only return bool
                             # todo: draw X or O in between
                             # todo: and get winner, winstate from different method
                             self.state.take_turn(row, col)
+                            cycle = self.state.board.has_cycle(row, col)
+                            if cycle is not None:
+                                thread1 = threading.Thread(target=self.state.board.resolve_cycle, args=(cycle,), daemon=True)
+                                thread1.start()
+                                self.drawer.draw_quantum_xo(self.state.board, row, col)
+                                self.drawer.draw_status_message("Resolving superposition, please wait some time...")
+                                thread1.join()
+
                             winner, winstate = self.state.board.check_win()
 
                             self.drawer.draw_quantum_xo(self.state.board, row, col)
                             self.drawer.draw_final(self.state.board)
+
+                        winner, winstate = self.state.board.check_win()
+                        if winner is False:
+                            break
+# =======
+#                         self.state.take_turn(row, col)
+#                         cycle = self.state.board.has_cycle(row, col)
+#                         if cycle is not None:
+#                             thread1 = threading.Thread(target=self.state.board.resolve_cycle, args=(cycle,))
+#                             thread1.start()
+#                             self.drawer.draw_quantum_xo(self.state.board, row, col)
+#                             self.drawer.draw_status_message("Resolving superposition, please wait some time...")
+#                             thread1.join()
+#
+#                         winner, winstate = self.state.board.check_win()
+#                         if winner is False:
+#                             break
+# >>>>>>> multithread-qrng
 
                         self.drawer.draw_status(self.state.board.turnNum, self.state.board.subTurnNum,
                                                 winner, self.state.first_player_uses)
