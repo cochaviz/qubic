@@ -19,16 +19,15 @@ def resolve_superposition(board, graph, cycle, quantic=True):
     # decide the coin toss
     # coin_toss_res = quantum_coin_flip()
     if quantic:
-        #todo: thread this statement
         list_argument = []
         thread1 = threading.Thread(target=quantum_coin_flip, args=(list_argument,))
         thread1.start()
         thread1.join(2.5)
         if len(list_argument) == 0:
-            print("Timeout happened :(")
+            print("Response was too slow, classical result.")
             coin_toss_res = getrandbits(1)
         else:
-            print("Quantic result!")
+            print("Quantum computer responded, the result is quantic!")
             coin_toss_res = int(list_argument[0])
     else:
         coin_toss_res = getrandbits(1)
@@ -41,7 +40,7 @@ def resolve_superposition(board, graph, cycle, quantic=True):
 
     # Use a queue of tuples to resolve all edges, where the tuples contain:
     # (key of edge, id of node where this key must land)
-    queue = Queue(maxsize=9)
+    queue = Queue(maxsize=GameProperties.get_instance().dim ** 2)
     queue.put((edge_id, node_id))
     return_dict = defaultdict(lambda: -1)
     decided_node_ids = []
