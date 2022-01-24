@@ -111,7 +111,7 @@ def quantum_coin_flip(list):
 
     qc.measure_all()
 
-    qi_job = execute(qc, backend=qi_backend, shots=1)
+    qi_job = execute(qc, backend=starmon_qi_backend, shots=1)
     qi_result = qi_job.result()
 
     # return measurement result: 0 or 1
