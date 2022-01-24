@@ -1,14 +1,13 @@
 import pygame as pg
 from util import GameProperties
 
-IMG_RATIO = 118 / 84
+# IMG_RATIO = 118 / 84
 FINAL_IMG_RATIO = 0.56
-
-NEW_IMG_HEIGHT = 40
+MARK_PADDING = 5
 
 
 class Drawer:
-    def __init__(self, RATIO=16 / 10, HEIGHT=900):
+    def __init__(self, RATIO=16 / 10, HEIGHT=1000):
     # def __init__(self, RATIO=16/10, HEIGHT=820):
         # general settings
         self.button_group = None
@@ -18,7 +17,7 @@ class Drawer:
 
         self.DIM_BUTTONS_WIDTH = 120
         self.DIM_BUTTONS_HEIGHT = 50
-        self.TOOLBAR_HEIGHT = 200
+        self.TOOLBAR_HEIGHT = 150
         self.STATUS_HEIGHT = 100
 
         # colors
@@ -44,7 +43,7 @@ class Drawer:
         """
         self.grid_left = self.h_padding_grid
         self.grid_right = self.WIDTH - self.h_padding_grid
-        self.grid_top = self.DIM_BUTTONS_HEIGHT + self.STATUS_HEIGHT
+        self.grid_top = self.STATUS_HEIGHT
         self.grid_bottom = self.HEIGHT - self.TOOLBAR_HEIGHT
 
         dim = GameProperties.get_instance().dim
@@ -52,14 +51,17 @@ class Drawer:
         self.grid_cell_width = (self.grid_right - self.grid_left) / dim
         self.grid_cell_height = (self.grid_bottom - self.grid_top) / dim
 
+        self.MARK_IMAGE_HEIGHT = (self.grid_cell_height - dim * MARK_PADDING) / dim
+        self.ratio = (self.grid_cell_width - dim * MARK_PADDING) / (dim * self.MARK_IMAGE_HEIGHT)
+
     def draw_grid(self, margin=7):
         """
         Draws the grid according to the given parameters
         """
         self.screen.fill(self.BG)
-        self.screen.fill(self.BG_ALT, (self.h_padding_grid, self.DIM_BUTTONS_HEIGHT + self.STATUS_HEIGHT,
+        self.screen.fill(self.BG_ALT, (self.h_padding_grid, self.STATUS_HEIGHT,
                                        self.WIDTH - 2 * self.h_padding_grid,
-                                       self.HEIGHT - self.DIM_BUTTONS_HEIGHT - self.TOOLBAR_HEIGHT - self.STATUS_HEIGHT))
+                                       self.HEIGHT - self.TOOLBAR_HEIGHT - self.STATUS_HEIGHT))
 
         width = self.grid_right - self.grid_left
         height = self.grid_bottom - self.grid_top
@@ -222,18 +224,19 @@ class Drawer:
                     self.draw_xo_at(board, posx + padding, posy + padding,
                                     ox_override=str.capitalize(board.board[row][col][0]), final=True, height=64)
 
-    def draw_quantum_xo(self, board, row, col, padding=15):
+    def draw_quantum_xo(self, board, row, col, padding=MARK_PADDING):
         """
         Draws an X or O in the given (row, col) depending on the board state
         """
-        posx = self.grid_left + self.grid_cell_width * col + ((len(board.board[row][col]) - 1) % 3) * (
-                IMG_RATIO * NEW_IMG_HEIGHT + padding) + padding
-        border_y = int((len(board.board[row][col]) - 1) / 3) * NEW_IMG_HEIGHT
+        dim = GameProperties.get_instance().dim
+        posx = self.grid_left + self.grid_cell_width * col + ((len(board.board[row][col]) - 1) % dim) * \
+               (self.ratio * self.MARK_IMAGE_HEIGHT + padding) + padding
+        border_y = int((len(board.board[row][col]) - 1) / dim) * (self.MARK_IMAGE_HEIGHT + padding)
         posy = self.grid_top + self.grid_cell_height * row + border_y + padding
 
-        self.draw_xo_at(board, posx, posy)
+        self.draw_xo_at(board, posx, posy, height=self.MARK_IMAGE_HEIGHT)
 
-    def draw_xo_at(self, board, posx, posy, ox_override=None, final=False, height=NEW_IMG_HEIGHT):
+    def draw_xo_at(self, board, posx, posy, ox_override=None, final=False, height=40):
         correct_turn_num = board.turnNum
 
         if board.subTurnNum % 2 == 0:
@@ -245,7 +248,7 @@ class Drawer:
             asset = "X" if correct_turn_num % 2 == 1 else "O"
 
         img = pg.image.load("assets/" + asset + ("F" if final else str(correct_turn_num)) + ".png")
-        img = pg.transform.smoothscale(img, ((FINAL_IMG_RATIO if final else IMG_RATIO) * height, height))
+        img = pg.transform.smoothscale(img, ((FINAL_IMG_RATIO if final else self.ratio) * height, height))
 
         self.screen.blit(img, (posx, posy))
 
@@ -261,8 +264,8 @@ class Drawer:
 
         # copy the rendered message onto the board
         # creating a small block at the bottom of the main display
-        self.screen.fill(self.BG, (0, self.DIM_BUTTONS_HEIGHT, self.WIDTH, self.STATUS_HEIGHT))
-        text_rect = text.get_rect(center=(self.WIDTH / 2, self.DIM_BUTTONS_HEIGHT + self.STATUS_HEIGHT / 2))
+        self.screen.fill(self.BG, (0, 0, self.WIDTH, self.STATUS_HEIGHT))
+        text_rect = text.get_rect(center=(self.WIDTH / 2, self.STATUS_HEIGHT / 2))
         self.screen.blit(text, text_rect)
         pg.display.update()
 
@@ -328,10 +331,10 @@ class Drawer:
         # copy the rendered message onto the board
         # creating a small block at the bottom of the main display
         # self.screen.fill(self.BG, (0, 0, self.WIDTH, self.STATUS_HEIGHT))
-        text_rect_points = text_points.get_rect(center=(self.WIDTH / 2, self.grid_bottom + self.TOOLBAR_HEIGHT * 2 / 3))
+        text_rect_points = text_points.get_rect(center=(self.WIDTH / 2, self.grid_bottom + self.TOOLBAR_HEIGHT / 3))
         self.screen.blit(text_points, text_rect_points)
 
-        text_rect_played = text_played.get_rect(center=(self.WIDTH / 2, self.grid_bottom + self.TOOLBAR_HEIGHT * 5 / 6))
+        text_rect_played = text_played.get_rect(center=(self.WIDTH / 2, self.grid_bottom + self.TOOLBAR_HEIGHT * 2 / 3))
         self.screen.blit(text_played, text_rect_played)
 
         pg.display.update()
