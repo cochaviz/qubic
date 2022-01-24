@@ -9,7 +9,7 @@ NEW_IMG_HEIGHT = 40
 
 class Drawer:
     def __init__(self, RATIO=16 / 10, HEIGHT=900):
-    # def __init__(self, RATIO=16/10, HEIGHT=820):
+        # def __init__(self, RATIO=16/10, HEIGHT=820):
         # general settings
         self.button_group = None
 
@@ -96,17 +96,20 @@ class Drawer:
         """
         self.screen.fill(self.BG)
 
-        text = "Welcome to Quantum Tic-Tac-Toe, *Qubic*! Instead of X's and O's, you can place two *basis states* " \
-               "of a qubit, namely: |0> and |1>. On each move, the current player marks *two* squares with their states, " \
+        text = "Welcome to Quantum Tic-Tac-Toe! Instead of X's and O's, you can place two *basis states* " \
+               "of a qubit, namely: |0> and |1>. On each move, the current player marks *two* squares with their " \
+               "states, " \
                "and each state is subscripted with the number of the move. The two squares are marked and called " \
                "*entangled*. Once a *cyclic entanglement*, a cycle in the entanglement graph, occurs, a measurement is " \
-               "triggered and the cycle collapses to only one of the states on the square. Like in classical " \
-               "tic-tac-toe, the goal is achieve 3 connected states (for the 3x3 board) or 4 connected states " \
-               "(for 4x4 and 5x5 boards). Explore the quantum concepts of superposition, entanglement, and measurement; " \
-               "and increase your winning probability."
+               "triggered on an actual quantum computer and the cycle collapses to only one of the states on the" \
+               " square. This can take up to 2.5 seconds, so please wait for the program to continue." \
+               " Like in classical tic-tac-toe, the goal is achieve 3" \
+               " connected states (for the 3x3 board) or 4 connected states (for 4x4 and 5x5 boards). Explore the" \
+               "quantum concepts of superposition, entanglement, and measurement; and increase your winning " \
+               "probability. "
 
         # keep margin low for text to be at top of window
-        margin = 100
+        margin = 50
         rect = pg.Rect(margin, margin,
                        self.WIDTH - 2 * margin, 2 * self.HEIGHT / 3)
         self.draw_text(text, (255, 255, 255), rect, self.mono_font)
@@ -315,7 +318,7 @@ class Drawer:
         """
         Method for drawing the scoreboard at the bottom of the screen
         """
-        message_points = "Player 1: {} points   Player 2: {} points"\
+        message_points = "Player 1: {} points   Player 2: {} points" \
             .format(game_state.player1_score, game_state.player2_score)
         message_played = "Games played: {} game".format(game_state.games_played) \
                          + ("s" if game_state.games_played != 1 else "")

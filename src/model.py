@@ -219,7 +219,7 @@ class Board:
 
             cycle = self.graph.get_cycle(new_index)
             if cycle is not None:
-                tile_to_mark = resolve_superposition(self.board, self.graph, cycle, quantic=False)
+                tile_to_mark = resolve_superposition(self.board, self.graph, cycle)
 
                 # Mark all nodes in the cycle as final
                 for node_id in tile_to_mark.keys():

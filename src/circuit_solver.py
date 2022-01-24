@@ -4,6 +4,7 @@ from qiskit import execute
 from qiskit.circuit import QuantumRegister, QuantumCircuit
 from quantuminspire.credentials import get_authentication
 from quantuminspire.qiskit import QI
+import threading
 
 QI_URL = os.getenv('API_URL', 'https://api.quantum-inspire.com/')
 
@@ -12,6 +13,7 @@ QI.set_authentication(authentication, QI_URL)
 
 qi_backend = QI.get_backend('QX single-node simulator')
 starmon_qi_backend = QI.get_backend('Starmon-5')
+coin_flip_return = None
 
 
 def add_gate_to_circ(qubit_index, gate_char, qr, qc, control_qubit_index=None):
@@ -98,7 +100,7 @@ def resolve_circuit(gates_list):
     return res
 
 
-def quantum_coin_flip():
+def quantum_coin_flip(list):
     """
     does a random measurement on an qubit in superposition, then
     returns a 0 or 1, with p(0) = p(1) = 50%
@@ -109,8 +111,10 @@ def quantum_coin_flip():
 
     qc.measure_all()
 
-    qi_job = execute(qc, backend=starmon_qi_backend, shots=1)
+    qi_job = execute(qc, backend=qi_backend, shots=1)
     qi_result = qi_job.result()
 
     # return measurement result: 0 or 1
-    return next(iter(qi_result.get_counts(qc).items()))[0]
+    list.append(next(iter(qi_result.get_counts(qc).items()))[0])
+
+
