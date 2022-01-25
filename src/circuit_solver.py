@@ -72,7 +72,6 @@ def resolve_circuit(gates_list):
     q = QuantumRegister(len(qubits), 'q')
     qc = QuantumCircuit(q, name="tic-tac-toe circuit")
 
-    # todo: optimize this
     for state in qubits:
         if state[0] == 'x':
             qc.x(q[qubits.index(state)])
@@ -126,7 +125,7 @@ def quantum_coin_flip(list):
 
     qc.measure_all()
 
-    qi_job = execute(qc, backend=starmon_qi_backend, shots=1)
+    qi_job = execute(qc, backend=qi_backend, shots=1)
     qi_result = qi_job.result()
 
     # return measurement result: 0 or 1

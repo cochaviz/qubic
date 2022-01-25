@@ -229,53 +229,53 @@ class Board:
             self.marks.add(char)
             self.prevSubTurnIndex = None
 
-            cycle = self.graph.get_cycle(new_index)
-            if cycle is not None:
-                # first node in cycle
-                nodes = self.graph.get_connected_nodes(cycle[0][0])
-
-                marks_in_nodes = set()
-
-                for node in nodes:
-                    row, col = GameProperties.id_to_position(node)
-                    marks_in_nodes.update(self.board[row][col])
-
-                # remove marks from self.marks since they will be decided
-                self.marks -= marks_in_nodes
-
-                # gates involved in measurement
-                gates = []
-
-                for gate in self.gates_list:
-                    if gate.target_state in marks_in_nodes or gate.control_state in marks_in_nodes:
-                        gates.append(gate)
-
-                # remove gate from self.gates_list
-                for gate in gates:
-                    try:
-                        self.gates_list.remove(gate)
-                    except ValueError:
-                        pass
-
-                measurements = resolve_circuit(gates)
-
-                tile_to_mark = resolve_superposition(self.graph, cycle, quantic=False)
-
-                for tile, mark in tile_to_mark.items():
-                    row, col = GameProperties.id_to_position(tile)
-                    if mark in measurements.keys():
-                        self.board[row][col] = 'x' if measurements[mark] == 1 else 'o'
-                    else:
-                        self.board[row][col] = mark[0]
-
-
-                # Mark all nodes in the cycle as final
-                for node_id in tile_to_mark.keys():
-                    row, col = GameProperties.id_to_position(node_id)
-                    self.final[row][col] = int(tile_to_mark[node_id][1:])
-
-                # Remove all edges and nodes that were in the cycle
-                self.graph.remove_cycle(cycle)
+            # cycle = self.graph.get_cycle(new_index)
+            # if cycle is not None:
+            #     # first node in cycle
+            #     nodes = self.graph.get_connected_nodes(cycle[0][0])
+            #
+            #     marks_in_nodes = set()
+            #
+            #     for node in nodes:
+            #         row, col = GameProperties.id_to_position(node)
+            #         marks_in_nodes.update(self.board[row][col])
+            #
+            #     # remove marks from self.marks since they will be decided
+            #     self.marks -= marks_in_nodes
+            #
+            #     # gates involved in measurement
+            #     gates = []
+            #
+            #     for gate in self.gates_list:
+            #         if gate.target_state in marks_in_nodes or gate.control_state in marks_in_nodes:
+            #             gates.append(gate)
+            #
+            #     # remove gate from self.gates_list
+            #     for gate in gates:
+            #         try:
+            #             self.gates_list.remove(gate)
+            #         except ValueError:
+            #             pass
+            #
+            #     measurements = resolve_circuit(gates)
+            #
+            #     tile_to_mark = resolve_superposition(self.graph, cycle, quantic=True)
+            #
+            #     for tile, mark in tile_to_mark.items():
+            #         row, col = GameProperties.id_to_position(tile)
+            #         if mark in measurements.keys():
+            #             self.board[row][col] = 'x' if measurements[mark] == 1 else 'o'
+            #         else:
+            #             self.board[row][col] = mark[0]
+            #
+            #
+            #     # Mark all nodes in the cycle as final
+            #     for node_id in tile_to_mark.keys():
+            #         row, col = GameProperties.id_to_position(node_id)
+            #         self.final[row][col] = int(tile_to_mark[node_id][1:])
+            #
+            #     # Remove all edges and nodes that were in the cycle
+            #     self.graph.remove_cycle(cycle)
         # When there is 1 possible spot left:
         elif self.prevSubTurnIndex == new_index:
             self.board[row][col] = char[0]
@@ -297,8 +297,42 @@ class Board:
         The cycle that is provided as an argument is resolved, by collapsing the superposition
         and deleting the cycle from the graph.
         """
+        # first node in cycle
+        nodes = self.graph.get_connected_nodes(cycle[0][0])
 
-        tile_to_mark = resolve_superposition(self.board, self.graph, cycle)
+        marks_in_nodes = set()
+
+        for node in nodes:
+            row, col = GameProperties.id_to_position(node)
+            marks_in_nodes.update(self.board[row][col])
+
+        # remove marks from self.marks since they will be decided
+        self.marks -= marks_in_nodes
+
+        # gates involved in measurement
+        gates = []
+
+        for gate in self.gates_list:
+            if gate.target_state in marks_in_nodes or gate.control_state in marks_in_nodes:
+                gates.append(gate)
+
+        # remove gate from self.gates_list
+        for gate in gates:
+            try:
+                self.gates_list.remove(gate)
+            except ValueError:
+                pass
+
+        measurements = resolve_circuit(gates)
+
+        tile_to_mark = resolve_superposition(self.graph, cycle, quantic=True)
+
+        for tile, mark in tile_to_mark.items():
+            row, col = GameProperties.id_to_position(tile)
+            if mark in measurements.keys():
+                self.board[row][col] = 'x' if measurements[mark] == 1 else 'o'
+            else:
+                self.board[row][col] = mark[0]
 
         # Mark all nodes in the cycle as final
         for node_id in tile_to_mark.keys():
@@ -307,6 +341,16 @@ class Board:
 
         # Remove all edges and nodes that were in the cycle
         self.graph.remove_cycle(cycle)
+
+        # tile_to_mark = resolve_superposition(self.board, self.graph, cycle)
+
+        # # Mark all nodes in the cycle as final
+        # for node_id in tile_to_mark.keys():
+        #     row, col = GameProperties.id_to_position(node_id)
+        #     self.final[row][col] = int(tile_to_mark[node_id][1:])
+        #
+        # # Remove all edges and nodes that were in the cycle
+        # self.graph.remove_cycle(cycle)
 
 
 # TODO: only measure gates that are inside the cycle
@@ -350,7 +394,8 @@ class GameState:
 
     # todo: move this to Board
     def place_gate(self, gate, mark, control_state_index=None):
-        if self.board.subTurnNum != 0 or self.get_moving_player().gates_count[gate] == 0 or mark not in self.board.marks:
+        if self.board.subTurnNum != 0 or self.get_moving_player().gates_count[
+            gate] == 0 or mark not in self.board.marks:
             return False
         if gate is Gate.Gates.CNOT:
             if control_state_index is None or control_state_index not in self.board.marks:
