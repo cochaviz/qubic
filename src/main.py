@@ -60,12 +60,13 @@ class Game:
                         winner = None
 
                         # gate selection
-                        # todo: check if clicked on gate panel
                         if self.drawer.gate_panel.collidepoint(event.pos):
                             for [rect, gate] in self.drawer.button_group:
                                 # user clicked on gate button
                                 if rect.collidepoint(event.pos) and self.state.get_moving_player().gates_count[gate] > 0:
-                                    # todo: change status
+                                    # change status
+                                    self.drawer.draw_status_message("Select target and control states in console...")
+
                                     message = "You selected {} gate, please type in a target state (ie: x1, o4): "\
                                         .format(str.capitalize(gate.value))
                                     print('\n' + message + '\nTarget state:')
@@ -107,24 +108,6 @@ class Game:
 
                             self.drawer.draw_quantum_xo(self.state.board, row, col)
                             self.drawer.draw_final(self.state.board)
-
-                        # winner, winstate = self.state.board.check_win()
-                        # if winner is False:
-                        #     break
-# =======
-#                         self.state.take_turn(row, col)
-#                         cycle = self.state.board.has_cycle(row, col)
-#                         if cycle is not None:
-#                             thread1 = threading.Thread(target=self.state.board.resolve_cycle, args=(cycle,))
-#                             thread1.start()
-#                             self.drawer.draw_quantum_xo(self.state.board, row, col)
-#                             self.drawer.draw_status_message("Resolving superposition, please wait some time...")
-#                             thread1.join()
-#
-#                         winner, winstate = self.state.board.check_win()
-#                         if winner is False:
-#                             break
-# >>>>>>> multithread-qrng
 
                         self.drawer.draw_status(self.state.board.turnNum, self.state.board.subTurnNum,
                                                 winner, self.state.first_player_uses)

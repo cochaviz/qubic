@@ -1,10 +1,9 @@
 import os
 
-from qiskit import execute
+from qiskit import execute, BasicAer
 from qiskit.circuit import QuantumRegister, QuantumCircuit
 from quantuminspire.credentials import get_authentication
 from quantuminspire.qiskit import QI
-import threading
 
 QI_URL = os.getenv('API_URL', 'https://api.quantum-inspire.com/')
 
@@ -77,27 +76,32 @@ def resolve_circuit(gates_list):
             qc.x(q[qubits.index(state)])
 
     # add gates to quantum circuit
+    cx_gates = []
     for gate in gates_list:
+        if gate.gate_char == 'cx':
+            cx_gates.append(gate)
+            continue
         qubit_index = qubits.index(gate.target_state)
-        control_qubit_index = None
+        add_gate_to_circ(qubit_index, gate.gate_char, q, qc)
 
-        if gate.control_state is not None:
-            control_qubit_index = qubits.index(gate.control_state)
-
+    # solve cx gates last
+    for gate in cx_gates:
+        qubit_index = qubits.index(gate.target_state)
+        control_qubit_index = qubits.index(gate.control_state)
         add_gate_to_circ(qubit_index, gate.gate_char, q, qc, control_qubit_index=control_qubit_index)
+
 
     qc.measure_all()
 
-    # try:
-    #     qi_job = execute(qc, backend=starmon_qi_backend, shots=1)
-    #     qi_result = qi_job.result()
-    #     histogram = qi_result.get_counts(qc)
-    # except:
-    #     qi_job = execute(qc, backend=qi_backend, shots=1)
-    #     qi_result = qi_job.result()
-    #     histogram = qi_result.get_counts(qc)
-    qi_job = execute(qc, backend=qi_backend, shots=1)
-    qi_result = qi_job.result()
+    # todo: move starmon solver on thread
+    try:
+        qi_job = execute(qc, backend=starmon_qi_backend, shots=1)
+        qi_result = qi_job.result()
+    except:
+        backend = BasicAer.get_backend("qasm_simulator")
+        qi_job = execute(qc, backend=backend, shots=1)
+        qi_result = qi_job.result()
+
     histogram = qi_result.get_counts(qc)
 
     # get run result

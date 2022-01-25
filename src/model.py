@@ -342,25 +342,12 @@ class Board:
         # Remove all edges and nodes that were in the cycle
         self.graph.remove_cycle(cycle)
 
-        # tile_to_mark = resolve_superposition(self.board, self.graph, cycle)
 
-        # # Mark all nodes in the cycle as final
-        # for node_id in tile_to_mark.keys():
-        #     row, col = GameProperties.id_to_position(node_id)
-        #     self.final[row][col] = int(tile_to_mark[node_id][1:])
-        #
-        # # Remove all edges and nodes that were in the cycle
-        # self.graph.remove_cycle(cycle)
-
-
-# TODO: only measure gates that are inside the cycle
 class GameState:
     def __init__(self):
         self.board = Board()
         self.games_played = -1
 
-        # queue of players
-        # todo: update reset/new game method
         self.players = [Player(), Player()]
 
         self.first_player_uses = 'o'
@@ -394,8 +381,7 @@ class GameState:
 
     # todo: move this to Board
     def place_gate(self, gate, mark, control_state_index=None):
-        if self.board.subTurnNum != 0 or self.get_moving_player().gates_count[
-            gate] == 0 or mark not in self.board.marks:
+        if self.board.subTurnNum != 0 or self.get_moving_player().gates_count[gate] == 0 or mark not in self.board.marks:
             return False
         if gate is Gate.Gates.CNOT:
             if control_state_index is None or control_state_index not in self.board.marks:
