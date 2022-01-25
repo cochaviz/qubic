@@ -51,10 +51,18 @@ class Game:
                                 break
 
                     elif GameProperties.view() == Views.BOARD:
+                        # game is over
                         if self.state.board.winner is not None:
                             self.state.update_scores()
                             self.drawer.draw_scoreboard(self.state)
                             self.reset()
+                            break
+
+                        # user clicked on 'home' button
+                        if self.drawer.back_button.collidepoint(event.pos):
+                            GameProperties(None, Views.HOME)
+                            self.state.abort_current_game()
+                            self.drawer.init_home_window()
                             break
 
                         row, col = self.user_click()

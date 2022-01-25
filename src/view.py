@@ -20,6 +20,8 @@ class Drawer:
         self.TOOLBAR_HEIGHT = 150
         self.STATUS_HEIGHT = 100
 
+        self.back_button_width = 60
+
         # colors
         self.BG = (52, 52, 52)
         self.BG_ALT = (80, 80, 80)
@@ -270,6 +272,9 @@ class Drawer:
         self.screen.fill(self.BG, (0, 0, self.WIDTH, self.STATUS_HEIGHT))
         text_rect = text.get_rect(center=(self.WIDTH / 2, self.STATUS_HEIGHT / 2))
         self.screen.blit(text, text_rect)
+
+        self.draw_back_button()
+
         pg.display.update()
 
     # draw some text into an area of a surface
@@ -341,3 +346,17 @@ class Drawer:
         self.screen.blit(text_played, text_rect_played)
 
         pg.display.update()
+
+    def draw_back_button(self):
+        text = self.mono_font.render("HOME", True, (0, 0, 0))
+
+        center_width = self.h_padding_grid + text.get_rect().width / 2
+        back_button = text.get_rect(center=(center_width, self.STATUS_HEIGHT / 2))
+        self.screen.fill(self.BG_ALT, back_button)
+
+        self.back_button = back_button
+
+        self.screen.blit(text, back_button)
+        pg.display.update()
+
+

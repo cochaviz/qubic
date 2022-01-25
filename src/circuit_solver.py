@@ -4,7 +4,6 @@ from qiskit import execute
 from qiskit.circuit import QuantumRegister, QuantumCircuit
 from quantuminspire.credentials import get_authentication
 from quantuminspire.qiskit import QI
-import threading
 
 QI_URL = os.getenv('API_URL', 'https://api.quantum-inspire.com/')
 
