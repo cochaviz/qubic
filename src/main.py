@@ -50,6 +50,10 @@ class Game:
                                 break
 
                     elif GameProperties.view() == Views.BOARD:
+                        if self.drawer.back_button.collidepoint(event.pos):
+                            GameProperties(None, Views.HOME)
+                            self.drawer.init_home_window()
+                            break
                         if self.state.board.winner is not None:
                             self.state.update_scores()
                             self.drawer.draw_scoreboard(self.state)
