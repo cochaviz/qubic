@@ -104,7 +104,7 @@ class Drawer:
                "and each state is subscripted with the number of the move. The two squares are marked and called " \
                "*entangled*. Once a *cyclic entanglement*, a cycle in the entanglement graph, occurs, a measurement is " \
                "triggered on an actual quantum computer and the cycle collapses to only one of the states on the" \
-               " square. This can take up to 2.5 seconds, so please wait for the program to continue." \
+               " square. This can take up to 5 seconds, so please wait for the program to continue." \
                " Like in classical tic-tac-toe, the goal is achieve 3" \
                " connected states (for the 3x3 board) or 4 connected states (for 4x4 and 5x5 boards). Explore the" \
                "quantum concepts of superposition, entanglement, and measurement; and increase your winning " \
