@@ -270,6 +270,10 @@ class GameState:
         self.first_player_uses = 'x' if self.first_player_uses == 'o' else 'o'
         self.board.reset()
 
+    def abort_current_game(self):
+        self.games_played -= 1
+        self.first_player_uses = 'x' if self.first_player_uses == 'o' else 'o'
+
     def is_invalid_move(self, row, col):
         """
         Checks to see if a move is valid or not, based on the row and column coordinates
