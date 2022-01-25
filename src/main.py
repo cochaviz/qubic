@@ -1,17 +1,22 @@
 # importing the required libraries
-import pygame as pg
 import sys
 import time
 
 from model import *
+from util import Views
 from view import *
+import threading
 
 FPS = 30
 
 
 class Game:
     def __init__(self):
-        self.state = GameState()
+        # init game properties
+        GameProperties(None, Views.HOME)
+
+        # game state
+        self.state = None
 
         # initializing the pygame window
         pg.init()
@@ -23,10 +28,8 @@ class Game:
         # infrastructure of the display
         self.drawer = Drawer()
 
-        # setting up a nametag for the
-        # game window
-
-        self.reset()
+        # start on home window
+        self.drawer.init_home_window()
 
     def run(self):
         while True:
@@ -37,69 +40,86 @@ class Game:
                     sys.exit()
 
                 elif event.type == pg.MOUSEBUTTONDOWN and pg.mouse.get_pressed()[0]:
-                    if self.state.board.winner is not None:
-                        self.reset()
-                        break
+                    if GameProperties.view() == Views.HOME:
+                        for button in self.drawer.button_group:
+                            # user clicked on button
+                            if button[0].collidepoint(event.pos):
+                                # change dimension to what user selected
+                                # and update view
+                                GameProperties(button[1], Views.BOARD)
+                                self.reset()
+                                break
 
-                    row, col = self.user_click()
+                    elif GameProperties.view() == Views.BOARD:
+                        # game is over
+                        if self.state.board.winner is not None:
+                            self.state.update_scores()
+                            self.drawer.draw_scoreboard(self.state)
+                            self.reset()
+                            break
 
-                    # Message is false if the move is valid
-                    message = self.state.is_invalid_move(row, col)
-                    if message:
-                        self.drawer.draw_status_message(message)
-                        break
+                        # user clicked on 'home' button
+                        if self.drawer.back_button.collidepoint(event.pos):
+                            GameProperties(None, Views.HOME)
+                            self.state.abort_current_game()
+                            self.drawer.init_home_window()
+                            break
 
-                    self.state.take_turn(row, col)
-                    winner, winstate = self.state.board.check_win()
+                        row, col = self.user_click()
 
-                    if winner is False:
-                        break
+                        # Message is false if the move is valid
+                        message = self.state.is_invalid_move(row, col)
+                        if message:
+                            self.drawer.draw_status_message(message)
+                            break
 
-                    self.drawer.draw_quantum_xo(self.state.board, row, col)
-                    self.drawer.draw_status(self.state.board.turnNum, self.state.board.subTurnNum, winner, winstate)
-                    self.drawer.draw_final(self.state.board)
+                        self.state.take_turn(row, col)
+                        cycle = self.state.board.has_cycle(row, col)
+                        if cycle is not None:
+                            thread1 = threading.Thread(target=self.state.board.resolve_cycle, args=(cycle,))
+                            thread1.start()
+                            self.drawer.draw_quantum_xo(self.state.board, row, col)
+                            self.drawer.draw_status_message("Resolving superposition, please wait some time...")
+                            thread1.join()
 
+                        winner, winstate = self.state.board.check_win()
+                        if winner is False:
+                            break
+
+                        self.drawer.draw_quantum_xo(self.state.board, row, col)
+                        self.drawer.draw_status(self.state.board.turnNum, self.state.board.subTurnNum,
+                                                winner, self.state.first_player_uses)
+                        self.drawer.draw_final(self.state.board)
             pg.display.update()
             self.CLOCK.tick(FPS)
 
     def reset(self):
-        self.state.reset()
-        self.drawer.init_window()
+        if self.state is None:
+            self.state = GameState()
+
+        self.state.new_game()
+        self.drawer.init_window(self.state)
         time.sleep(.1)
 
     def user_click(self):
         # get coordinates of mouse click
         x, y = pg.mouse.get_pos()
 
-        # get column of mouse click (1-3)
-        if x < self.drawer.grid_left:
+        dim = GameProperties.get_instance().dim
+
+        col = -1
+        row = -1
+        # get row of col of user click
+        for i in range(0, dim):
+            if x > self.drawer.grid_left + i * self.drawer.grid_cell_width:
+                col = i
+            if y > self.drawer.grid_top + i * self.drawer.grid_cell_height:
+                row = i
+
+        # check if outside grid
+        if x > self.drawer.grid_left + dim * self.drawer.grid_cell_width:
             col = -1
-        elif x < self.drawer.grid_left + self.drawer.grid_cell_width:
-            col = 0
-
-        elif x < self.drawer.grid_left + self.drawer.grid_cell_width * 2:
-            col = 1
-
-        elif x < self.drawer.grid_left + self.drawer.grid_cell_width * 3:
-            col = 2
-
-        else:
-            col = -1
-
-        # get row of mouse click (1-3)
-        if y < self.drawer.grid_top:
-            row = -1
-
-        elif y < self.drawer.grid_top + self.drawer.grid_cell_height:
-            row = 0
-
-        elif y < self.drawer.grid_top + self.drawer.grid_cell_height * 2:
-            row = 1
-
-        elif y < self.drawer.grid_top + self.drawer.grid_cell_height * 3:
-            row = 2
-
-        else:
+        if y > self.drawer.grid_top + dim * self.drawer.grid_cell_height:
             row = -1
 
         return row, col
