@@ -1,6 +1,7 @@
 from random import getrandbits
 from queue import Queue
 from collections import defaultdict
+import threading
 
 from circuit_solver import quantum_coin_flip
 from util import GameProperties
@@ -18,7 +19,16 @@ def resolve_superposition(board, graph, cycle, quantic=True):
     # decide the coin toss
     # coin_toss_res = quantum_coin_flip()
     if quantic:
-        coin_toss_res = quantum_coin_flip()
+        list_argument = []
+        thread1 = threading.Thread(target=quantum_coin_flip, args=(list_argument,))
+        thread1.start()
+        thread1.join(7.5)
+        if len(list_argument) == 0:
+            print("Response was too slow, classical result.")
+            coin_toss_res = getrandbits(1)
+        else:
+            print("Quantum computer responded, the result is quantic!")
+            coin_toss_res = int(list_argument[0])
     else:
         coin_toss_res = getrandbits(1)
 

@@ -5,6 +5,7 @@ import time
 from model import *
 from util import Views
 from view import *
+import threading
 
 FPS = 30
 
@@ -65,8 +66,15 @@ class Game:
                             break
 
                         self.state.take_turn(row, col)
-                        winner, winstate = self.state.board.check_win()
+                        cycle = self.state.board.has_cycle(row, col)
+                        if cycle is not None:
+                            thread1 = threading.Thread(target=self.state.board.resolve_cycle, args=(cycle,))
+                            thread1.start()
+                            self.drawer.draw_quantum_xo(self.state.board, row, col)
+                            self.drawer.draw_status_message("Resolving superposition, please wait some time...")
+                            thread1.join()
 
+                        winner, winstate = self.state.board.check_win()
                         if winner is False:
                             break
 

@@ -4,6 +4,7 @@ from qiskit import execute
 from qiskit.circuit import QuantumRegister, QuantumCircuit
 from quantuminspire.credentials import get_authentication
 from quantuminspire.qiskit import QI
+import threading
 
 QI_URL = os.getenv('API_URL', 'https://api.quantum-inspire.com/')
 
@@ -98,7 +99,7 @@ def resolve_circuit(gates_list):
     return res
 
 
-def quantum_coin_flip():
+def quantum_coin_flip(list):
     """
     does a random measurement on an qubit in superposition, then
     returns a 0 or 1, with p(0) = p(1) = 50%
@@ -113,4 +114,6 @@ def quantum_coin_flip():
     qi_result = qi_job.result()
 
     # return measurement result: 0 or 1
-    return next(iter(qi_result.get_counts(qc).items()))[0]
+    list.append(next(iter(qi_result.get_counts(qc).items()))[0])
+
+
