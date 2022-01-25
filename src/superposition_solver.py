@@ -22,7 +22,7 @@ def resolve_superposition(board, graph, cycle, quantic=True):
         list_argument = []
         thread1 = threading.Thread(target=quantum_coin_flip, args=(list_argument,))
         thread1.start()
-        thread1.join(2.5)
+        thread1.join(7.5)
         if len(list_argument) == 0:
             print("Response was too slow, classical result.")
             coin_toss_res = getrandbits(1)
